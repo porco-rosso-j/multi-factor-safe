@@ -1,0 +1,42 @@
+[profile.default]
+emv_version = "paris"
+src = "src"
+out = "out"
+test = "test"
+script = "script"
+libs = [
+    "node_modules",
+    "lib",
+]
+optimizer = true
+optimizer_runs = 10000
+fs_permissions = [{ access = "read", path = "./"}]
+ignored_warnings_from = [
+    "node_modules",
+    "node_modules/@rhinestone/modulekit/src/**/*.sol",
+    "lib",
+]
+
+[rpc_endpoints]
+sepolia = "${SEPOLIA_RPC_URL}"
+amoy = "${AMOY_RPC_URL}"
+scroll = "${SCROLL_RPC_URL}"
+linea = "${LINEA_RPC_URL}"
+celo = "${CELO_RPC_URL}"
+chiado = "${GNOSIS_RPC_URL}"
+
+# [etherscan]
+# sepolia = { key = "${BASE_SCAN_API_KEY}" }
+
+[fmt]
+bracket_spacing = true
+int_types = "long"
+line_length = 100
+multiline_func_header = "all"
+number_underscore = "thousands"
+quote_style = "double"
+tab_width = 4
+wrap_comments = true
+ignore = [
+    "./src/zksyncDeps/contracts/L2ContractHelper.sol",
+]

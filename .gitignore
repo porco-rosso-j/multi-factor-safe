@@ -1,0 +1,8 @@
+node_modules
+.DS_Store
+cache
+out
+broadcast
+trash
+.env
+src/validators/wip
