@@ -267,7 +267,7 @@ contract PasswordValidator is ERC7579ValidatorBase {
      * @return name of the module
      */
     function name() external pure virtual returns (string memory) {
-        return "Validator";
+        return "PasswordValidator";
     }
 
     /**

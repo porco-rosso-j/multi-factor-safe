@@ -35,8 +35,10 @@ contract SafeMultiFactorTest is Test, SafeTestTools, TestInputs {
     address owner = 0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266;
 
     // Signer Adapter
-    Safe7579SignatureValidator anonAadhaarSignerAdapter;
-    Safe7579SignatureValidator passwordSignerAdapter;
+    // Safe7579SignatureValidator anonAadhaarSignerAdapter;
+    // Safe7579SignatureValidator passwordSignerAdapter;
+    address anonAadhaarSignerAdapter;
+    address passwordSignerAdapter;
 
     // AnonAadhaar verifier and validator
     AnonAaadhaarVerifier anonAaadhaarVerifier;
@@ -49,6 +51,8 @@ contract SafeMultiFactorTest is Test, SafeTestTools, TestInputs {
 
     // Safe contracts
     SafeInstance safeInstance;
+
+    mapping(address => bytes) public signerToData;
 
     function setUp() public {
         /// setup validators and signer adapters
@@ -66,19 +70,29 @@ contract SafeMultiFactorTest is Test, SafeTestTools, TestInputs {
         passwordValidator = new PasswordValidator(address(passwordVerifier));
 
         // signer adapters
-        anonAadhaarSignerAdapter = new Safe7579SignatureValidator(
-            address(anonAadhaarValidator),
-            abi.encode(aadhaarUserDataHash)
+        anonAadhaarSignerAdapter = address(
+            new Safe7579SignatureValidator(
+                address(anonAadhaarValidator),
+                abi.encode(aadhaarUserDataHash)
+            )
         );
 
-        console2.logAddress(address(anonAadhaarSignerAdapter));
+        console2.logString("anonAadhaarSignerAdapter address: ");
+        console2.logAddress(anonAadhaarSignerAdapter);
 
-        passwordSignerAdapter = new Safe7579SignatureValidator(
-            address(passwordValidator),
-            abi.encode(passwordHash)
+        signerToData[anonAadhaarSignerAdapter] = aadhaarProofData;
+
+        passwordSignerAdapter = address(
+            new Safe7579SignatureValidator(
+                address(passwordValidator),
+                abi.encode(passwordHash)
+            )
         );
 
-        console2.logAddress(address(passwordSignerAdapter));
+        console2.logString("passwordSignerAdapter address: ");
+        console2.logAddress(passwordSignerAdapter);
+
+        signerToData[passwordSignerAdapter] = passwordProofData;
 
         uint256[] memory ownerPKs = new uint256[](1);
         ownerPKs[0] = ownerPK;
@@ -87,10 +101,10 @@ contract SafeMultiFactorTest is Test, SafeTestTools, TestInputs {
         safeInstance = _setupSafe(ownerPKs, 1, 100 ether);
 
         // add anonAadhaarSignerAdapter as owner
-        addOwner(address(anonAadhaarSignerAdapter), 1);
+        addOwner(anonAadhaarSignerAdapter, 1);
 
         // add passwordSignerAdapter as owner
-        addOwner(address(passwordSignerAdapter), 3);
+        addOwner(passwordSignerAdapter, 3);
 
         assertEq(safeInstance.safe.getThreshold(), 3);
         assertEq(safeInstance.safe.getOwners().length, 3);
@@ -120,17 +134,13 @@ contract SafeMultiFactorTest is Test, SafeTestTools, TestInputs {
 
         console2.logString("anonAadhaarSignature safe op hash: ");
         console2.logBytes32(
-            keccak256(
-                abi.encodePacked(address(anonAadhaarSignerAdapter), safeTxHash)
-            )
+            keccak256(abi.encodePacked(anonAadhaarSignerAdapter, safeTxHash))
         );
         // 0x687f1fe30ca2db05608adc61300aa7073ba2492e9fa51d18844cdb99cffed07d
 
         console2.logString("passwordSignature safe op hash: ");
         console2.logBytes32(
-            keccak256(
-                abi.encodePacked(address(passwordSignerAdapter), safeTxHash)
-            )
+            keccak256(abi.encodePacked(passwordSignerAdapter, safeTxHash))
         );
         // 0x87c539e13ad3f81ae01b641b37aa1df1a9bf3f765e08d1c69dfef95f4e0e2227
 
@@ -161,64 +171,61 @@ contract SafeMultiFactorTest is Test, SafeTestTools, TestInputs {
         address[] memory owners = safeInstance.safe.getOwners();
         owners = Sort.sort(owners);
 
+        bytes memory signatures;
+        bytes memory signatureBytes;
+        uint position = 65 * owners.length;
+
         for (uint i = 0; i < owners.length; i++) {
             console2.logAddress(owners[i]);
+
+            bytes memory signerData = signerToData[owners[i]];
+            if (signerData.length != 0) {
+                (
+                    bytes memory _signature,
+                    bytes memory _signatureBytes
+                ) = genContractSignature(owners[i], position, signerData);
+
+                signatures = bytes.concat(signatures, _signature);
+                signatureBytes = bytes.concat(signatureBytes, _signatureBytes);
+
+                position += _signatureBytes.length;
+            } else {
+                bytes memory ecdsaSignature = genECDSASignature(
+                    ownerPK,
+                    safeTxHash
+                );
+
+                signatures = bytes.concat(signatures, ecdsaSignature);
+            }
         }
 
-        (uint8 v, bytes32 r, bytes32 s) = Vm(VM_ADDR).sign(ownerPK, safeTxHash);
+        return bytes.concat(signatures, signatureBytes);
+    }
 
-        // console2.logUint(2);
+    function genECDSASignature(
+        uint256 privateKey,
+        bytes32 safeTxHash
+    ) public returns (bytes memory) {
+        (uint8 v, bytes32 r, bytes32 s) = Vm(VM_ADDR).sign(
+            privateKey,
+            safeTxHash
+        );
+        return abi.encodePacked(r, s, v);
+    }
 
-        uint signatureLen = 65;
-        uint sigByte2Position = signatureLen * 3;
-        // uint sigByte3Position = sigByte2Position + aadhaarProofData.length;
-        uint sigByte3Position = sigByte2Position +
-            32 +
-            passwordProofData.length;
-
-        // console2.logUint(3);
-
-        bytes memory passwordSignature = bytes.concat(
-            abi.encode(address(passwordSignerAdapter), sigByte2Position),
+    function genContractSignature(
+        address contractAddress,
+        uint position,
+        bytes memory data
+    ) public returns (bytes memory, bytes memory) {
+        bytes memory signature = bytes.concat(
+            abi.encode(contractAddress, position),
             bytes1(0x00)
         );
 
-        console2.logString("passwordSignature len: ");
-        console2.logUint(passwordSignature.length);
+        bytes memory signatureBytes = abi.encodePacked(data.length, data);
 
-        // console2.logUint(4);
-
-        bytes memory anonAaadhaarSignature = bytes.concat(
-            abi.encode(address(anonAadhaarSignerAdapter), sigByte3Position),
-            bytes1(0x00)
-        );
-
-        console2.logString("anonAaadhaarSignature len: ");
-        console2.logUint(anonAaadhaarSignature.length);
-
-        bytes memory ecdsaSignature = abi.encodePacked(r, s, v);
-
-        console2.logString("ecdsaSignature len: ");
-        console2.logUint(ecdsaSignature.length);
-
-        bytes memory aadhaarSignatureBytes = abi.encodePacked(
-            aadhaarProofData.length,
-            aadhaarProofData
-        );
-        bytes memory passwordSignatureBytes = abi.encodePacked(
-            passwordProofData.length,
-            passwordProofData
-        );
-
-        bytes memory signatures = bytes.concat(
-            passwordSignature,
-            anonAaadhaarSignature,
-            ecdsaSignature,
-            passwordSignatureBytes,
-            aadhaarSignatureBytes
-        );
-
-        return signatures;
+        return (signature, signatureBytes);
     }
 
     function addOwner(address newOwner, uint threshold) public {
