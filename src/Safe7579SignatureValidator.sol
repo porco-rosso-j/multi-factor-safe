@@ -81,17 +81,12 @@ contract Safe7579SignatureValidator is ISignatureValidator {
     // it's important to disable this contract once it's removed from the safe
     function _isSafeOwner(address sender) internal view returns (bool) {
         address[] memory owners = ISafe(sender).getOwners();
-
-        uint8 index = 0;
-        bool hasOwner = false;
-
         for (uint8 i = 0; i < owners.length; i++) {
             if (owners[i] == address(this)) {
-                hasOwner = true;
-                break;
+                return true;
             }
         }
 
-        return hasOwner;
+        return false;
     }
 }

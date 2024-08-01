@@ -5,12 +5,15 @@ import {ERC7579ValidatorBase} from "modulekit/Modules.sol";
 import {PackedUserOperation} from "modulekit/external/ERC4337.sol";
 import {UltraVerifier as Verifier} from "./plonk_vk.sol";
 
+// test
+import {console2} from "forge-std/console2.sol";
+
 /**
- * @title PasswordValidator
- * @dev Module that allows users to designate owners that can validate transactions
+ * @title PrivateOwnerValidator
+ * @dev Module that allows users to designate hidden EOA owners that can validate transactions
  * @author porco_rosso_j
  */
-contract PasswordValidator is ERC7579ValidatorBase {
+contract PrivateOwnerValidator is ERC7579ValidatorBase {
     /*//////////////////////////////////////////////////////////////////////////
                             CONSTANTS & STORAGE
     //////////////////////////////////////////////////////////////////////////*/
@@ -20,8 +23,7 @@ contract PasswordValidator is ERC7579ValidatorBase {
     address public immutable verifier;
 
     // account => userDataHash
-    mapping(address account => bytes32 passwordHash)
-        public accountToPasswordHash;
+    mapping(address account => bytes32 ownerHash) public accountToOwnerHash;
 
     constructor(address _verifier) {
         verifier = _verifier;
@@ -39,9 +41,9 @@ contract PasswordValidator is ERC7579ValidatorBase {
      */
     function onInstall(bytes calldata data) external override {
         // decode the threshold and owners
-        bytes32 passwordHash = abi.decode(data, (bytes32));
+        bytes32 ownerHash = abi.decode(data, (bytes32));
 
-        if (passwordHash == bytes32(0)) {
+        if (ownerHash == bytes32(0)) {
             revert InvalidPasswordHash();
         }
 
@@ -49,7 +51,7 @@ contract PasswordValidator is ERC7579ValidatorBase {
         address account = msg.sender;
 
         // set the userDataHash
-        accountToPasswordHash[account] = passwordHash;
+        accountToOwnerHash[account] = ownerHash;
     }
 
     /**
@@ -61,7 +63,7 @@ contract PasswordValidator is ERC7579ValidatorBase {
         address account = msg.sender;
 
         // remove the userDataHash
-        accountToPasswordHash[account] = bytes32(0);
+        accountToOwnerHash[account] = bytes32(0);
     }
 
     /**
@@ -71,28 +73,28 @@ contract PasswordValidator is ERC7579ValidatorBase {
      * @return true if the module is initialized, false otherwise
      */
     function isInitialized(address smartAccount) public view returns (bool) {
-        return accountToPasswordHash[smartAccount] != bytes32(0);
+        return accountToOwnerHash[smartAccount] != bytes32(0);
     }
 
     /**
-     * Sets the passwordHash for the account
+     * Sets the ownerHash for the account
      * @dev the function will revert if the module is not initialized
      *
-     * @param _passwordHash uint256 passwordHash to set
+     * @param _ownerHash uint256 ownerHash to set
      */
-    function setPasswordHash(bytes32 _passwordHash) external {
+    function setPasswordHash(bytes32 _ownerHash) external {
         // cache the account address
         address account = msg.sender;
         // check if the module is initialized and revert if it is not
         if (!isInitialized(account)) revert NotInitialized(account);
 
-        // make sure that the passwordHash is set
-        if (_passwordHash == bytes32(0)) {
+        // make sure that the ownerHash is set
+        if (_ownerHash == bytes32(0)) {
             revert InvalidPasswordHash();
         }
 
-        // set the passwordHash
-        accountToPasswordHash[account] = _passwordHash;
+        // set the ownerHash
+        accountToOwnerHash[account] = _ownerHash;
     }
 
     /*//////////////////////////////////////////////////////////////////////////
@@ -162,15 +164,15 @@ contract PasswordValidator is ERC7579ValidatorBase {
         bytes calldata signature,
         bytes calldata data
     ) external view returns (bool) {
-        // decode the passwordHash
-        bytes32 passwordHash = abi.decode(data, (bytes32));
+        // decode the ownerHash
+        bytes32 ownerHash = abi.decode(data, (bytes32));
 
-        // check that passwordHash is set
-        if (passwordHash == bytes32(0)) {
+        // check that ownerHash is set
+        if (ownerHash == bytes32(0)) {
             return false;
         }
 
-        return _verifyProof(signature, passwordHash, hash);
+        return _verifyProof(signature, ownerHash, hash);
     }
 
     /*//////////////////////////////////////////////////////////////////////////
@@ -183,25 +185,25 @@ contract PasswordValidator is ERC7579ValidatorBase {
         bytes calldata data
     ) internal view returns (bool) {
         // get the userDataHash and check that its set
-        bytes32 passwordHash = accountToPasswordHash[account];
-        if (passwordHash == bytes32(0)) {
+        bytes32 ownerHash = accountToOwnerHash[account];
+        if (ownerHash == bytes32(0)) {
             return false;
         }
 
-        return _verifyProof(data, passwordHash, hash);
+        return _verifyProof(data, ownerHash, hash);
     }
 
     function _verifyProof(
         bytes memory proof,
-        bytes32 passwordHash,
+        bytes32 ownerHash,
         bytes32 hash
     ) internal view returns (bool) {
         // set public inputs
         bytes32[] memory publicInputs = new bytes32[](65);
 
         publicInputs = _constructPublicInputs(
-            passwordHash,
-            bytes32(abi.encodePacked(block.chainid)),
+            ownerHash,
+            bytes32(abi.encodePacked(msg.sender, uint32(block.chainid))), // salt
             hash // commitmentHash ( safe op hash)
         );
 
@@ -216,12 +218,12 @@ contract PasswordValidator is ERC7579ValidatorBase {
     }
 
     function _constructPublicInputs(
-        bytes32 passwordHash,
+        bytes32 ownerHash,
         bytes32 salt,
         bytes32 commitmentHash
     ) internal pure returns (bytes32[] memory) {
         bytes32[] memory publicInputs = new bytes32[](65);
-        publicInputs[0] = passwordHash;
+        publicInputs[0] = ownerHash;
 
         for (uint256 i = 0; i < 32; i++) {
             // Process salt
@@ -255,7 +257,7 @@ contract PasswordValidator is ERC7579ValidatorBase {
      * @return name of the module
      */
     function name() external pure virtual returns (string memory) {
-        return "PasswordValidator";
+        return "PrivateOwnerValidator";
     }
 
     /**

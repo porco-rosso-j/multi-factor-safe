@@ -35,8 +35,6 @@ contract SafeMultiFactorTest is Test, SafeTestTools, TestInputs {
     address owner = 0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266;
 
     // Signer Adapter
-    // Safe7579SignatureValidator anonAadhaarSignerAdapter;
-    // Safe7579SignatureValidator passwordSignerAdapter;
     address anonAadhaarSignerAdapter;
     address passwordSignerAdapter;
 
@@ -163,6 +161,7 @@ contract SafeMultiFactorTest is Test, SafeTestTools, TestInputs {
 
         uint balanceAfter = owner.balance;
         console2.logUint(balanceAfter);
+        assertEq(balanceAfter, balanceBefore + value);
     }
 
     function constructSignatures(
