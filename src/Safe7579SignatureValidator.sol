@@ -6,6 +6,7 @@ import {ISignatureValidator} from "./interfaces/ISignatureValidator.sol";
 import {ISafe} from "./interfaces/ISafe.sol";
 
 /// This contract acts as safe owner and relays EIP1271 validation to given ERC7579 validator
+import {console2} from "forge-std/console2.sol";
 
 contract Safe7579SignatureValidator is ISignatureValidator {
     error NotSafeOwner();
@@ -39,7 +40,7 @@ contract Safe7579SignatureValidator is ISignatureValidator {
 
     // legacy EIP-1271 functione for safe <= 1.4.1
     function isValidSignature(
-        bytes memory data,
+        bytes memory data, // txHashData == pack(0x19, 0x00, ds, safeTxHash)
         bytes memory signature
     ) public view override returns (bytes4 magicValue) {
         // decode data into hash
@@ -60,9 +61,9 @@ contract Safe7579SignatureValidator is ISignatureValidator {
         bytes memory signature
     ) internal view returns (bool) {
         // check if msg.sender, i.e. Safe, has this address as one of the owners
-        if (!_isSafeOwner(msg.sender)) {
-            revert NotSafeOwner();
-        }
+        // if (!_isSafeOwner(msg.sender)) {
+        //     revert NotSafeOwner();
+        // }
 
         // check if this address has already been registered as "account" in the validator
         if (!IValidator(validator).isInitialized(address(this))) {

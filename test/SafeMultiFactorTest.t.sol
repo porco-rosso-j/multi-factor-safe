@@ -142,7 +142,7 @@ contract SafeMultiFactorTest is Test, SafeTestTools, TestInputs {
         );
         // 0x87c539e13ad3f81ae01b641b37aa1df1a9bf3f765e08d1c69dfef95f4e0e2227
 
-        // uint balanceBefore = owner.balance;
+        uint balanceBefore = owner.balance;
         bytes memory signatures = constructSignatures(safeTxHash);
         // console2.logBytes(signatures);
 
