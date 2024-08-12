@@ -20,13 +20,11 @@ The pre-validated signature flow is as follows:
 
 ### EIP1271 vs Pre-validated Signature flows
 
-Since the signatures are aggregated off-chain in the EIP-1271 flow, it's less costly in terms of gas compared with `approveHash()` which requires on-chain transactions for each signing. However, the latter is more robust because it doesn't have to rely on a centralized signature aggregator, i.e. Safe Transaction Service.
-
 Since signatures can be aggregated off-chain in the EIP-1271 flow using off-chain signature aggregator, e.g. Safe Transaction Service or its variant, it's less costly in terms of transaction gas overhead compared with pre-validated signature flow which requires separate on-chain transactions from signer adapters.
 
 Safe Web App currently doesn’t support off-chain signature aggregation for external smart contracts except Safe: a situation where Safe is one of the owners of another Safe. For the reasons above, at this point, our first demo app ( see below ) only works in the pre-validated signature flow.
 
-## Validators
+### Validators
 
 Safe MFA can support an expanding range of signature validation schemes as the number of ERC7579 validators continues to grow. Existing validators like [Webauthn](https://github.com/zerodevapp/kernel-7579-plugins/tree/master/validators/webauthn), [MultiFactor](https://docs.rhinestone.wtf/module-sdk/modules/multi-factor), and [Farcaster](https://github.com/Destiner/module-frame), can surely be integrated out of the box.
 
