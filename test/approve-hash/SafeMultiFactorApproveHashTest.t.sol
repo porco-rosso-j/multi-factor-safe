@@ -7,26 +7,13 @@ import {console2} from "forge-std/console2.sol";
 import {SafeTestTools, SafeInstance, Safe, DeployedSafe, SafeTestLib, Enum, Sort, VM_ADDR} from "safe-tools/SafeTestTools.sol";
 import {Verifier as AnonAaadhaarVerifier} from "@anon-aadhaar/contracts/src/Verifier.sol";
 import {AnonAadhaar} from "@anon-aadhaar/contracts/src/AnonAadhaar.sol";
-import {TestInputs} from "./TestInputs.sol";
-import {AadhaarValidator} from "../src/validators/aadhaar/AadhaarValidator.sol";
-import {UltraVerifier as PasswordVerifier} from "../src/validators/password/plonk_vk.sol";
-import {PasswordValidator} from "../src/validators/password/PasswordValidator.sol";
-import {Safe7579SignatureValidator} from "../src/Safe7579SignatureValidator.sol";
+import {TestInputs} from "../TestInputs.sol";
+import {AadhaarValidator} from "../../src/validators/aadhaar/AadhaarValidator.sol";
+import {UltraVerifier as PasswordVerifier} from "../../src/validators/password/plonk_vk.sol";
+import {PasswordValidator} from "../../src/validators/password/PasswordValidator.sol";
+import {Safe7579SignatureValidator} from "../../src/Safe7579SignatureValidator.sol";
 
-// 1. deploy erc7579 validator
-// 2. deploy adapter signer
-// 3. deploy Safe with adapter signer
-
-// owner setup
-// 1. EOA
-// 2. password
-// 3. anon-aadhaar
-// threshold = 3
-
-// safeOpHash == commitment
-// keccak256(safeOpHash) == commitmentHash
-
-contract SafeMultiFactorTest is Test, SafeTestTools, TestInputs {
+contract SafeMultiFactorApproveHashTest is Test, SafeTestTools, TestInputs {
     using SafeTestLib for SafeInstance;
     using Sort for address[];
 
@@ -35,8 +22,8 @@ contract SafeMultiFactorTest is Test, SafeTestTools, TestInputs {
     address owner = 0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266;
 
     // Signer Adapter
-    address anonAadhaarSignerAdapter;
-    address passwordSignerAdapter;
+    Safe7579SignatureValidator anonAadhaarSignerAdapter;
+    Safe7579SignatureValidator passwordSignerAdapter;
 
     // AnonAadhaar verifier and validator
     AnonAaadhaarVerifier anonAaadhaarVerifier;
@@ -68,29 +55,25 @@ contract SafeMultiFactorTest is Test, SafeTestTools, TestInputs {
         passwordValidator = new PasswordValidator(address(passwordVerifier));
 
         // signer adapters
-        anonAadhaarSignerAdapter = address(
-            new Safe7579SignatureValidator(
-                address(anonAadhaarValidator),
-                abi.encode(aadhaarUserDataHash)
-            )
+        anonAadhaarSignerAdapter = new Safe7579SignatureValidator(
+            address(anonAadhaarValidator),
+            abi.encode(aadhaarUserDataHash)
         );
 
         console2.logString("anonAadhaarSignerAdapter address: ");
-        console2.logAddress(anonAadhaarSignerAdapter);
+        console2.logAddress(address(anonAadhaarSignerAdapter));
 
-        signerToData[anonAadhaarSignerAdapter] = aadhaarProofData;
+        signerToData[address(anonAadhaarSignerAdapter)] = aadhaarProofData;
 
-        passwordSignerAdapter = address(
-            new Safe7579SignatureValidator(
-                address(passwordValidator),
-                abi.encode(passwordHash)
-            )
+        passwordSignerAdapter = new Safe7579SignatureValidator(
+            address(passwordValidator),
+            abi.encode(passwordHash)
         );
 
         console2.logString("passwordSignerAdapter address: ");
-        console2.logAddress(passwordSignerAdapter);
+        console2.logAddress(address(passwordSignerAdapter));
 
-        signerToData[passwordSignerAdapter] = passwordProofData;
+        signerToData[address(passwordSignerAdapter)] = passwordProofData;
 
         uint256[] memory ownerPKs = new uint256[](1);
         ownerPKs[0] = ownerPK;
@@ -99,10 +82,10 @@ contract SafeMultiFactorTest is Test, SafeTestTools, TestInputs {
         safeInstance = _setupSafe(ownerPKs, 1, 100 ether);
 
         // add anonAadhaarSignerAdapter as owner
-        addOwner(anonAadhaarSignerAdapter, 1);
+        addOwner(address(anonAadhaarSignerAdapter), 1);
 
         // add passwordSignerAdapter as owner
-        addOwner(passwordSignerAdapter, 3);
+        addOwner(address(passwordSignerAdapter), 3);
 
         assertEq(safeInstance.safe.getThreshold(), 3);
         assertEq(safeInstance.safe.getOwners().length, 3);
@@ -127,6 +110,7 @@ contract SafeMultiFactorTest is Test, SafeTestTools, TestInputs {
             _nonce: _nonce
         });
 
+        console2.logString("safeTxHash: ");
         console2.logBytes32(safeTxHash);
         // 0x12bd7a332765c0c0efb5015fb23ec0654567604f547b0dbe0ca94b20ad5fbf40
 
@@ -144,7 +128,21 @@ contract SafeMultiFactorTest is Test, SafeTestTools, TestInputs {
 
         uint balanceBefore = owner.balance;
         bytes memory signatures = constructSignatures(safeTxHash);
-        // console2.logBytes(signatures);
+
+        console2.logString("signatures: ");
+        console2.logBytes(signatures);
+
+        passwordSignerAdapter.approveHashOnSafe(
+            address(safeInstance.safe),
+            safeTxHash,
+            signerToData[address(passwordSignerAdapter)]
+        );
+
+        anonAadhaarSignerAdapter.approveHashOnSafe(
+            address(safeInstance.safe),
+            safeTxHash,
+            signerToData[address(anonAadhaarSignerAdapter)]
+        );
 
         safeInstance.execTransaction(
             owner,
@@ -171,7 +169,6 @@ contract SafeMultiFactorTest is Test, SafeTestTools, TestInputs {
         owners = Sort.sort(owners);
 
         bytes memory signatures;
-        bytes memory signatureBytes;
         uint position = 65 * owners.length;
 
         for (uint i = 0; i < owners.length; i++) {
@@ -179,15 +176,15 @@ contract SafeMultiFactorTest is Test, SafeTestTools, TestInputs {
 
             bytes memory signerData = signerToData[owners[i]];
             if (signerData.length != 0) {
-                (
-                    bytes memory _signature,
-                    bytes memory _signatureBytes
-                ) = genContractSignature(owners[i], position, signerData);
+                bytes memory approveHashSig = abi.encodePacked(
+                    bytes32(uint256(uint160(owners[i]))),
+                    bytes32(0),
+                    bytes1(0x01)
+                );
 
-                signatures = bytes.concat(signatures, _signature);
-                signatureBytes = bytes.concat(signatureBytes, _signatureBytes);
+                console2.logBytes(approveHashSig);
 
-                position += _signatureBytes.length;
+                signatures = bytes.concat(signatures, approveHashSig);
             } else {
                 bytes memory ecdsaSignature = genECDSASignature(
                     ownerPK,
@@ -198,7 +195,7 @@ contract SafeMultiFactorTest is Test, SafeTestTools, TestInputs {
             }
         }
 
-        return bytes.concat(signatures, signatureBytes);
+        return signatures;
     }
 
     function genECDSASignature(
@@ -210,21 +207,6 @@ contract SafeMultiFactorTest is Test, SafeTestTools, TestInputs {
             safeTxHash
         );
         return abi.encodePacked(r, s, v);
-    }
-
-    function genContractSignature(
-        address contractAddress,
-        uint position,
-        bytes memory data
-    ) public returns (bytes memory, bytes memory) {
-        bytes memory signature = bytes.concat(
-            abi.encode(contractAddress, position),
-            bytes1(0x00)
-        );
-
-        bytes memory signatureBytes = abi.encodePacked(data.length, data);
-
-        return (signature, signatureBytes);
     }
 
     function addOwner(address newOwner, uint threshold) public {

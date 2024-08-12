@@ -3,6 +3,7 @@ import react from "@vitejs/plugin-react";
 import copy from "rollup-plugin-copy";
 import fs from "fs";
 import path from "path";
+import svgr from "vite-plugin-svgr";
 
 const wasmContentTypePlugin = {
 	name: "wasm-content-type-plugin",
@@ -23,7 +24,12 @@ const wasmContentTypePlugin = {
 // Export the merged configuration
 export default defineConfig(({ command }) => {
 	const baseConfig = {
-		plugins: [react()],
+		plugins: [
+			react(),
+			svgr({
+				include: "**/*.svg?react",
+			}),
+		],
 	};
 
 	const serveConfig = {

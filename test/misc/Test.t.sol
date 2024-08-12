@@ -3,8 +3,8 @@ pragma solidity ^0.8.25;
 
 import {Test} from "forge-std/Test.sol";
 import {console2} from "forge-std/console2.sol";
-import {ISignatureValidator} from "../src/interfaces/ISignatureValidator.sol";
-import {ISafe} from "../src/interfaces/ISafe.sol";
+import {ISignatureValidator} from "../../src/interfaces/ISignatureValidator.sol";
+import {ISafe} from "../../src/interfaces/ISafe.sol";
 import {Enum} from "safe-tools/SafeTestTools.sol";
 
 contract TTest is Test {
@@ -22,12 +22,17 @@ contract TTest is Test {
     }
 
     function test_genCommitmentHash() public {
+        bytes32 txDataHash = bytes32(
+            0x0000000000000000000000000000000000000000000000000000000000000000
+        );
         console2.logBytes32(txDataHash); // safe tx hash
 
         bytes32 safeOpHash = keccak256(
             abi.encodePacked(
                 address(0x09d4E28B9710c097A14A46099De60FBaACE8f492),
-                bytes32(0x3bdea30bbfc5b7ad564b0bd2ae76bbf432c055feb740e1919bf225c7db7e0422)
+                bytes32(
+                    0x3bdea30bbfc5b7ad564b0bd2ae76bbf432c055feb740e1919bf225c7db7e0422
+                ),
                 txDataHash
             )
         );
