@@ -8,9 +8,13 @@ import {ISafe} from "./interfaces/ISafe.sol";
 /// This contract acts as safe owner and relays EIP1271 validation to given ERC7579 validator
 import {console2} from "forge-std/console2.sol";
 
+// TODO: should store safe/acc addr and block calls from other addrs in validation methods?
+// either address safe or mapping(address => bool) accounts. still 1 adapter to N Safes.
+
 contract Safe7579SignatureValidator is ISignatureValidator {
     error NotSafeOwner();
     error ValidatorNotInitialized();
+    error InvalidSignature();
 
     bytes4 internal constant EIP1271_MAGIC_VALUE = 0x1626ba7e;
     bytes4 internal constant EIP1271_MAGIC_VALUE_LEGACY = 0x20c13b0b;
@@ -38,7 +42,7 @@ contract Safe7579SignatureValidator is ISignatureValidator {
         }
     }
 
-    // legacy EIP-1271 functione for safe <= 1.4.1
+    // legacy EIP-1271 function for safe <= 1.4.1
     function isValidSignature(
         bytes memory data, // txHashData == pack(0x19, 0x00, ds, safeTxHash)
         bytes memory signature
@@ -56,11 +60,28 @@ contract Safe7579SignatureValidator is ISignatureValidator {
         }
     }
 
+    function approveHashOnSafe(
+        address safe,
+        bytes32 safeTxHash,
+        bytes memory signature
+    ) public {
+        // msg.sender doesnt matter
+        bytes32 safeOpHash = keccak256(
+            abi.encodePacked(address(this), safeTxHash)
+        );
+
+        if (_isValidSignature(safeOpHash, signature)) {
+            ISafe(safe).approveHash(safeTxHash);
+        } else {
+            revert InvalidSignature();
+        }
+    }
+
     function _isValidSignature(
         bytes32 hash,
         bytes memory signature
     ) internal view returns (bool) {
-        // check if msg.sender, i.e. Safe, has this address as one of the owners
+        // // check if msg.sender, i.e. Safe, has this address as one of the owners
         // if (!_isSafeOwner(msg.sender)) {
         //     revert NotSafeOwner();
         // }

@@ -16,4 +16,5 @@ interface ISafe {
         address payable refundReceiver,
         bytes memory signatures
     ) external payable returns (bool success);
+    function approveHash(bytes32 hashToApprove) external;
 }

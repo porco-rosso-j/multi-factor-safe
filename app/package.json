@@ -12,15 +12,25 @@
   "dependencies": {
     "@aztec/bb.js": "0.38.0",
     "@biomejs/biome": "^1.6.0",
+    "@mantine/core": "^7.3.2",
+    "@mantine/hooks": "^7.3.2",
+    "@mantine/notifications": "^7.3.2",
     "@noir-lang/backend_barretenberg": "0.30.0",
     "@noir-lang/noir_js": "0.30.0",
     "@noir-lang/types": "0.30.0",
+    "@safe-global/protocol-kit": "^4.0.3",
+    "@tabler/icons-react": "^2.47.0",
+    "@walletconnect/ethereum-provider": "^2.14.0",
     "@walletconnect/types": "^2.11.2",
     "@walletconnect/web3wallet": "^1.10.2",
+    "@web3modal/ethers": "^5.0.11",
+    "@web3modal/wallet": "^5.0.11",
     "ethers": "^6.13.2",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
-    "viem": "^2.8.4"
+    "react-router-dom": "^6.26.0",
+    "viem": "^2.8.4",
+    "vite-plugin-svgr": "^4.2.0"
   },
   "devDependencies": {
     "@types/react": "^18.0.28",
@@ -31,6 +41,9 @@
     "eslint": "^8.38.0",
     "eslint-plugin-react-hooks": "^4.6.0",
     "eslint-plugin-react-refresh": "^0.3.4",
+    "postcss": "^8.4.32",
+    "postcss-preset-mantine": "^1.12.2",
+    "postcss-simple-vars": "^7.0.1",
     "rollup-plugin-copy": "^3.5.0",
     "typescript": "^5.0.2",
     "vite": "^4.3.2"
