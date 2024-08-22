@@ -28,20 +28,12 @@ contract Safe7579SignatureValidator is
     bytes4 internal constant EIP1271_MAGIC_VALUE_LEGACY = 0x20c13b0b;
     bytes4 internal constant EIP1271_FAILED_VALUE = 0xffffffff;
 
-    address public safe;
     address public validator;
 
-    // constructor(address _validator, bytes memory data) {
-    //     IValidator(_validator).onInstall(data);
-    //     validator = _validator;
-    // }
-
     function initialize(
-        address _safe
         address _validator,
         bytes memory data
     ) public initializer {
-        safe = _safe;
         validator = _validator;
         IValidator(_validator).onInstall(data);
     }
@@ -84,7 +76,6 @@ contract Safe7579SignatureValidator is
         bytes32 safeTxHash,
         bytes memory signature
     ) public {
-        // msg.sender doesnt matter
         bytes32 safeOpHash = keccak256(
             abi.encodePacked(address(this), safeTxHash)
         );
@@ -100,6 +91,7 @@ contract Safe7579SignatureValidator is
         bytes32 hash,
         bytes memory signature
     ) internal view returns (bool) {
+        // TODO: recall the cause of error here
         // // check if msg.sender, i.e. Safe, has this address as one of the owners
         // if (!_isSafeOwner(msg.sender)) {
         //     revert NotSafeOwner();

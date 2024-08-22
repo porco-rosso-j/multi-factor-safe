@@ -12,7 +12,7 @@ import { SafeOwner, SignatureParam } from "../utils/types";
 import { sendApproveHashTx } from "../utils/relayer";
 import { Signer, ethers } from "ethers";
 import {
-	getDomainSeparator,
+	// getDomainSeparator,
 	getPrivateOwnerHash,
 	getSafeMFAOpHash,
 	recoverPubKey,
@@ -132,24 +132,22 @@ export const getPrivateEOASignature = async (
 
 		// const chainId = (await signer.provider?.getNetwork())?.chainId;
 
-		const chainId = 11155111;
-		console.log("chainId: ", chainId);
-		const domainSeparator = await getDomainSeparator(
-			safeAddress,
-			Number(chainId)
-		);
-		console.log("domainSeparator: ", domainSeparator);
+		// const chainId = 11155111;
+		// console.log("chainId: ", chainId);
+		// const domainSeparator = await getDomainSeparator(
+		// 	safeAddress,
+		// 	Number(chainId)
+		// );
+		// console.log("domainSeparator: ", domainSeparator);
 
-		const ownerHash = await getPrivateOwnerHash(
-			await signer.getAddress(),
-			domainSeparator
-		);
+		const ownerHash = await getPrivateOwnerHash(await signer.getAddress());
 		console.log("ownerHash: ", ownerHash);
 
 		const safeMFAOpHash = await getSafeMFAOpHash(
 			signerAdapterAddress as string,
 			safeTxHash
 		);
+		console.log("safeMFAOpHash: ", safeMFAOpHash);
 
 		const messageHash = ethers.hashMessage(ethers.getBytes(safeMFAOpHash));
 		console.log("messageHash: ", messageHash);
@@ -179,7 +177,6 @@ export const getPrivateEOASignature = async (
 
 		const input = {
 			owner_hash: ownerHash,
-			domain_separator: domainSeparator,
 			hashed_message: parsedMessageHash,
 			pub_key: parsedPubKey.slice(1, 65),
 			signature: parsedSignature.slice(0, -1),

@@ -12,7 +12,7 @@ export async function pedersenHash(inputs: bigint[]): Promise<string> {
 
 async function main() {
 	// const inputArray: bigint[] = [1n, 2n, 3n];
-	// const inputArray: bigint[] = [0x91a399e2f7b768e627f1f7aff2df88ba73813911n];
+	const inputArray: bigint[] = [0x91a399e2f7b768e627f1f7aff2df88ba73813911n];
 
 	// const inputArray: bigint[] = [
 	// 	0x91a399e2f7b768e627f1f7aff2df88ba73813911n,
@@ -56,10 +56,10 @@ async function main() {
 		145,
 	];
 
-	const inputArray: bigint[] = [
-		0x91a399e2f7b768e627f1f7aff2df88ba73813911n,
-		..._domainSeparator.map((s) => BigInt(s)),
-	];
+	// const inputArray: bigint[] = [
+	// 	0x91a399e2f7b768e627f1f7aff2df88ba73813911n,
+	// 	..._domainSeparator.map((s) => BigInt(s)),
+	// ];
 
 	const result = await pedersenHash(inputArray);
 	console.log("result: ", result);

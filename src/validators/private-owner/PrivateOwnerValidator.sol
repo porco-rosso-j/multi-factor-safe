@@ -209,10 +209,10 @@ contract PrivateOwnerValidator is ERC7579ValidatorBase {
         bytes32 hash
     ) internal view returns (bool) {
         // set public inputs
-        bytes32[] memory publicInputs = new bytes32[](65);
+        bytes32[] memory publicInputs = new bytes32[](33);
         publicInputs = _constructPublicInputs(
             ownerHash,
-            _getDomainSeparator(),
+            // _getDomainSeparator(),
             hash.toEthSignedMessageHash() // hash of safeMfaOpHash
         );
 
@@ -227,20 +227,32 @@ contract PrivateOwnerValidator is ERC7579ValidatorBase {
 
     function _constructPublicInputs(
         bytes32 ownerHash,
-        bytes32 domainSeparator,
         bytes32 hash
     ) internal pure returns (bytes32[] memory) {
-        bytes32[] memory publicInputs = new bytes32[](65);
+        bytes32[] memory publicInputs = new bytes32[](33);
         publicInputs[0] = ownerHash;
-
         for (uint256 i = 0; i < 32; i++) {
-            // Process domainSeparator
-            publicInputs[i + 1] = bytes32(uint256(uint8(domainSeparator[i])));
-            // Process hash
-            publicInputs[i + 33] = bytes32(uint256(uint8(hash[i])));
+            publicInputs[i + 1] = bytes32(uint256(uint8(hash[i])));
         }
         return publicInputs;
     }
+
+    // function _constructPublicInputs(
+    //     bytes32 ownerHash,
+    //     bytes32 domainSeparator,
+    //     bytes32 hash
+    // ) internal pure returns (bytes32[] memory) {
+    //     bytes32[] memory publicInputs = new bytes32[](65);
+    //     publicInputs[0] = ownerHash;
+
+    //     for (uint256 i = 0; i < 32; i++) {
+    //         // Process domainSeparator
+    //         publicInputs[i + 1] = bytes32(uint256(uint8(domainSeparator[i])));
+    //         // Process hash
+    //         publicInputs[i + 33] = bytes32(uint256(uint8(hash[i])));
+    //     }
+    //     return publicInputs;
+    // }
 
     // TODO: domain separator may better have address(this) or other siloed salt
     // suppose one person uses one private eoa as some of private signers in a Safe on a chain.
@@ -248,15 +260,15 @@ contract PrivateOwnerValidator is ERC7579ValidatorBase {
     // but it's challenging to put the pre-computed address of the signer adapter
     // into ownerHash that is a param required at initialization
     // a walkaround?: put a value the private owner can set is stored in this contract
-    function _getDomainSeparator() internal view returns (bytes32) {
-        return
-            keccak256(
-                abi.encodePacked(
-                    msg.sender, // safe
-                    block.chainid // chainId
-                )
-            );
-    }
+    // function _getDomainSeparator() internal view returns (bytes32) {
+    //     return
+    //         keccak256(
+    //             abi.encodePacked(
+    //                 msg.sender, // safe
+    //                 block.chainid // chainId
+    //             )
+    //         );
+    // }
 
     /*//////////////////////////////////////////////////////////////////////////
                                      METADATA

@@ -80,9 +80,9 @@ contract DeploySignerValidator is Script {
 
         /*
         privateOwnerVerifier: 
-        0x81a2F0DbA20f5F7e099856Aa9BCcD3014FC23F54
+        0x9FAc2Bc1f0575883d2F24A29ebC6987502fa1432
         privateOwnerValidator: 
-        0xCFF0bfcD80AbE450C2C87eE6c630A548E9f1d684
+        0x86b185121035AbcbBc186a6ba442ecFbe9E23f0d
         */
 
         vm.stopBroadcast();
@@ -119,9 +119,8 @@ contract DeploySignerValidator is Script {
             0x2BC704F24B9c047E157dFf95C8595e0d9e5938FD
         );
 
-        // bytes32 ownerHash = 0x04aa9bc66094f8ee4a59cef0b0b99cb9297da9d28f1c1414b7f5a3eeb1720366;
-        bytes32 ownerHash = 0x261ff032949e8c78c678a9092b7c20553d94e58bbbf0964ac0500e76c817e00a;
-        address _privateOwnerValidator = 0xCFF0bfcD80AbE450C2C87eE6c630A548E9f1d684;
+        bytes32 ownerHash = 0x137ad2247d8e089ca5dc03f9a70e5bc68392ac2916495968a80c35582c1a3c37;
+        address _privateOwnerValidator = 0x86b185121035AbcbBc186a6ba442ecFbe9E23f0d;
 
         if (
             !signerAdapterFactory.getIsValidatorEnabled(_privateOwnerValidator)
@@ -140,6 +139,7 @@ contract DeploySignerValidator is Script {
         console2.logAddress(_privateOwnerSignerAdapter);
         // 0x7b3594D7aa7182A5767Cd5b44bCc2Aa8F7582E36
         // new : 0x2A8edc02CfDc67baE006a21D4A4F1650420595d5
+        // new ( no domain separator): 0x2a52159E1C78b4c0bBC3340BfcFAcB273A129fcB
 
         vm.stopBroadcast();
     }

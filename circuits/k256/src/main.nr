@@ -3,7 +3,7 @@ use dep::ecrecover;
 
 fn main(
     owner_hash: pub Field,
-    domain_separator: pub [u8;32],
+    // domain_separator: pub [u8;32],
     hashed_message: pub [u8; 32],
     pub_key: [u8; 64], 
     signature: [u8; 64], 
@@ -19,13 +19,14 @@ fn main(
 
     // std::println(recovered_addr);
 
-    let mut input: [Field; 33] = [0; 33];
-    input[0] = recovered_addr;
-    for i in 0..32 {
-        input[i + 1] = domain_separator[i] as Field;
-    }
+    // let mut input: [Field; 33] = [0; 33];
+    // input[0] = recovered_addr;
+    // for i in 0..32 {
+    //     input[i + 1] = domain_separator[i] as Field;
+    // }
 
-    let computed_hash = std::hash::pedersen_hash(input);
+    // let computed_hash = std::hash::pedersen_hash(input);
+    let computed_hash = std::hash::pedersen_hash([recovered_addr]);
     // std::println(computed_hash);
     // std::println(owner_hash);
 
@@ -52,14 +53,14 @@ fn test_main() {
    44, 173,  86,  64, 143, 202,   3, 123,  35,   7
   ];
 
-//   let owner_hash = 0x137ad2247d8e089ca5dc03f9a70e5bc68392ac2916495968a80c35582c1a3c37;
-  let owner_hash = 0x0ee869caf0f6187c861a3a319899bb97d0477722d2bce78c99012dc1ae6d729e;
-  let domain_separator: [u8;32] = [
-    104, 180, 171,  96, 220, 243, 144,  50,
-    0, 243, 196,  36, 122, 173, 193, 146,
-    6, 179,  23,  80, 130, 243,  86, 120,
-    244, 174, 100, 147, 213,  51, 243, 148
-  ]; 
+  let owner_hash = 0x137ad2247d8e089ca5dc03f9a70e5bc68392ac2916495968a80c35582c1a3c37;
+//  let owner_hash = 0x0ee869caf0f6187c861a3a319899bb97d0477722d2bce78c99012dc1ae6d729e;
+//   let domain_separator: [u8;32] = [
+//     104, 180, 171,  96, 220, 243, 144,  50,
+//     0, 243, 196,  36, 122, 173, 193, 146,
+//     6, 179,  23,  80, 130, 243,  86, 120,
+//     244, 174, 100, 147, 213,  51, 243, 148
+//   ]; 
 
     
   let signature = [
@@ -71,7 +72,8 @@ fn test_main() {
   227,  61, 200,  57, 163, 137,  92,  36, 209
   ];
 
-  main(owner_hash, domain_separator,hashed_message, pub_key, signature );
+//   main(owner_hash, domain_separator,hashed_message, pub_key, signature);
+ main(owner_hash,hashed_message, pub_key, signature);
 }
 
 
