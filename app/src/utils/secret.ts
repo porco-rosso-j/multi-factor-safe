@@ -1,5 +1,7 @@
 import { ethers } from "ethers";
 import { Barretenberg, Fr } from "@aztec/bb.js";
+import { parseUint8ArrayToBytes32 } from "./parser";
+import { pedersenHash } from "./pedersen";
 
 type SecretBytesAndHash = {
 	secretBytes: string[];
@@ -76,27 +78,27 @@ export async function getPaddedSecretBytes(_secret: string): Promise<string[]> {
 // 	return array;
 // }
 
-export async function parseUint8ArrayToBytes32(
-	value: Uint8Array
-): Promise<string[]> {
-	const array: string[] = [];
+// export async function parseUint8ArrayToBytes32(
+// 	value: Uint8Array
+// ): Promise<string[]> {
+// 	const array: string[] = [];
 
-	console.log("value: ", value);
-	for (let i = 0; i < value.length; i++) {
-		const element = `0x${value[i].toString(16).padStart(2, "0")}`;
-		array[i] = ethers.zeroPadValue(element, 32);
-	}
-	console.log("array: ", array);
-	return array;
-}
+// 	console.log("value: ", value);
+// 	for (let i = 0; i < value.length; i++) {
+// 		const element = `0x${value[i].toString(16).padStart(2, "0")}`;
+// 		array[i] = ethers.zeroPadValue(element, 32);
+// 	}
+// 	console.log("array: ", array);
+// 	return array;
+// }
 
-export async function pedersenHash(inputs: string[]): Promise<string> {
-	const bb: Barretenberg = await Barretenberg.new();
-	console.log("inputs: ", inputs);
-	const inputArray: Fr[] = inputs.map((str) => Fr.fromString(str));
-	console.log("inputArray Fr: ", inputArray);
-	return (await bb.pedersenHash(inputArray, 0)).toString();
-}
+// export async function pedersenHash(inputs: string[]): Promise<string> {
+// 	const bb: Barretenberg = await Barretenberg.new();
+// 	console.log("inputs: ", inputs);
+// 	const inputArray: Fr[] = inputs.map((str) => Fr.fromString(str));
+// 	console.log("inputArray Fr: ", inputArray);
+// 	return (await bb.pedersenHash(inputArray, 0)).toString();
+// }
 
 // export async function pedersenHash(inputs: bigint[]): Promise<string> {
 // 	const bb: Barretenberg = await Barretenberg.new();

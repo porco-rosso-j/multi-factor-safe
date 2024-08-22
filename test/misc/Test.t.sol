@@ -1,17 +1,24 @@
 // SPDX-License-Identifier: AGPL-3.0-only
 pragma solidity ^0.8.25;
 
+import {VM_ADDR} from "safe-tools/SafeTestTools.sol";
+import {Vm} from "forge-std/Vm.sol";
 import {Test} from "forge-std/Test.sol";
+import {ECDSA} from "@openzeppelin/contracts/utils/cryptography/ECDSA.sol";
+import {MessageHashUtils} from "@openzeppelin/contracts/utils/cryptography/MessageHashUtils.sol";
 import {console2} from "forge-std/console2.sol";
 import {ISignatureValidator} from "../../src/interfaces/ISignatureValidator.sol";
 import {ISafe} from "../../src/interfaces/ISafe.sol";
 import {Enum} from "safe-tools/SafeTestTools.sol";
 
 contract TTest is Test {
+    using ECDSA for bytes32;
+    using MessageHashUtils for bytes32;
+
     bytes32 private constant SAFE_TX_TYPEHASH =
         0xbb8310d486368db6bd6f849402fdd73ad53d316b5a4b2644ad6efe0f941286d8;
 
-    function test_genSalt() public {
+    function test_genSaltLocal() public {
         address caller = 0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266;
         console2.logAddress(caller);
         bytes32 value = bytes32(
@@ -19,6 +26,18 @@ contract TTest is Test {
         );
 
         console2.logBytes32(value);
+    }
+
+    function test_genSaltProd() public {
+        address safe = 0x4d8152386Ce4aC935d8Cfed93Ae06077025eAd9E;
+        bytes32 domainSeparator = keccak256(
+            abi.encodePacked(
+                safe, // safe
+                uint32(11155111) // sepolia chainId
+            )
+        );
+
+        console2.logBytes32(domainSeparator);
     }
 
     function test_genCommitmentHash() public {
@@ -89,5 +108,62 @@ contract TTest is Test {
         );
 
         console2.logBool(ret);
+    }
+
+    // // forge test --match-test test_getK256Signature -vvv
+    // function test_getK256Signature() public {
+    //     // address deployerAddress = vm.envAddress("ADDRESS");
+    //     uint256 privateKey = vm.envUint("PRIVATE_KEY");
+
+    //     (uint8 v, bytes32 r, bytes32 s) = Vm(VM_ADDR).sign(
+    //         privateKey,
+    //         bytes32(
+    //             0x032e60c0d43ea621d6f898a9596f7ca72cb6c127493094d691c032b66fa1f056
+    //         )
+    //     );
+
+    //     bytes memory signature = abi.encodePacked(r, s, v);
+    //     console2.logBytes(signature);
+    //     // 0xbf26330415a5eb86b1daf960c56a568ba9bb5b242c64e41eced58366796e82bd1fd0a574bd3893d233c3d4c2bc63907704ce75a1a115b5c6d39363fa629a3a191c
+    // }
+
+    // forge test --match-test test_getK256Signature -vvv
+    function test_getK256Signature() public {
+        // address deployerAddress = vm.envAddress("ADDRESS");
+        uint256 privateKey = vm.envUint("PRIVATE_KEY");
+
+        // (uint8 v, bytes32 r, bytes32 s) = Vm(VM_ADDR).sign(
+        //     privateKey,
+
+        // );
+        bytes32 hash = bytes32(
+            0xa29873d0d92580fe336372e52d0762aedcbefdf05e4eca4b37cafb2a4d9d49c9
+        );
+
+        bytes32 ethSignedHash = hash.toEthSignedMessageHash();
+        console2.logBytes32(ethSignedHash);
+        // 0x91ab97ad2c0931d0f7ca11bf3df933740342135737468935c75cc6fc4dcd7ca6
+
+        (uint8 v, bytes32 r, bytes32 s) = Vm(VM_ADDR).sign(
+            privateKey,
+            bytes32(ethSignedHash)
+        );
+
+        bytes memory signature = abi.encodePacked(r, s, v);
+        console2.logBytes(signature);
+        // 0xf0f140755cdb9a75d19637e1f57e40153e0c5b9c50fb59b4e935a33a344ea0063b869e0b8f5f5bb68c6ef038d93d855b1bef9d9529c2440aefd5ca0c9fff2e2f1b
+
+        address recoveredSigner = ECDSA.recover(ethSignedHash, signature);
+        console2.logAddress(recoveredSigner);
+        // 0x91A399E2F7B768e627f1f7Aff2Df88bA73813911
+    }
+
+    function test_signMessage() public {
+        bytes32 hash = bytes32(
+            0x5e09f329248597177bf930dcfcfab7c36937b0b290c95e06027c6b055d708bb4
+        );
+
+        bytes32 ethSignedHash = hash.toEthSignedMessageHash();
+        console2.logBytes32(ethSignedHash);
     }
 }

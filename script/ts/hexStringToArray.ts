@@ -21,6 +21,7 @@ function hexStringToBytes(hex: string): Uint8Array {
 }
 
 // Example usage:
-const hexString = "0xAA36A7";
+const hexString =
+	"0xbcb864b0ee24f7f5fc72cecff9ac7f9ea5b2fd58b33c5032b53a9c17b4ed1f91n";
 const byteArray = hexStringToBytes(hexString);
 console.log(byteArray); // Output: Uint8Array [ 49, 167, 188 ]

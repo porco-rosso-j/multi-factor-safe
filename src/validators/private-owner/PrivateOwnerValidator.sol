@@ -1,6 +1,7 @@
 // SPDX-License-Identifier: AGPL-3.0-only
 pragma solidity ^0.8.25;
 
+import {MessageHashUtils} from "@openzeppelin/contracts/utils/cryptography/MessageHashUtils.sol";
 import {ERC7579ValidatorBase} from "modulekit/Modules.sol";
 import {PackedUserOperation} from "modulekit/external/ERC4337.sol";
 import {UltraVerifier as Verifier} from "./plonk_vk.sol";
@@ -14,11 +15,13 @@ import {console2} from "forge-std/console2.sol";
  * @author porco_rosso_j
  */
 contract PrivateOwnerValidator is ERC7579ValidatorBase {
+    using MessageHashUtils for bytes32;
+
     /*//////////////////////////////////////////////////////////////////////////
                             CONSTANTS & STORAGE
     //////////////////////////////////////////////////////////////////////////*/
 
-    error InvalidPasswordHash();
+    error InvalidPrivateOwnerHash();
 
     address public immutable verifier;
 
@@ -44,7 +47,7 @@ contract PrivateOwnerValidator is ERC7579ValidatorBase {
         bytes32 ownerHash = abi.decode(data, (bytes32));
 
         if (ownerHash == bytes32(0)) {
-            revert InvalidPasswordHash();
+            revert InvalidPrivateOwnerHash();
         }
 
         // cache the account address
@@ -82,7 +85,7 @@ contract PrivateOwnerValidator is ERC7579ValidatorBase {
      *
      * @param _ownerHash uint256 ownerHash to set
      */
-    function setPasswordHash(bytes32 _ownerHash) external {
+    function setPrivateOwnerHash(bytes32 _ownerHash) external {
         // cache the account address
         address account = msg.sender;
         // check if the module is initialized and revert if it is not
@@ -90,7 +93,7 @@ contract PrivateOwnerValidator is ERC7579ValidatorBase {
 
         // make sure that the ownerHash is set
         if (_ownerHash == bytes32(0)) {
-            revert InvalidPasswordHash();
+            revert InvalidPrivateOwnerHash();
         }
 
         // set the ownerHash
@@ -193,6 +196,13 @@ contract PrivateOwnerValidator is ERC7579ValidatorBase {
         return _verifyProof(data, ownerHash, hash);
     }
 
+    // TODO: first salt:
+    // 1: safe addr -> msg.sender
+    // 2: signer addr -> address(this)
+    // 3: owner addr -> no as it should be private
+
+    // might need more siloed salt(domain separator)
+    // hash(safe, signer, chainid)
     function _verifyProof(
         bytes memory proof,
         bytes32 ownerHash,
@@ -200,15 +210,13 @@ contract PrivateOwnerValidator is ERC7579ValidatorBase {
     ) internal view returns (bool) {
         // set public inputs
         bytes32[] memory publicInputs = new bytes32[](65);
-
         publicInputs = _constructPublicInputs(
             ownerHash,
-            bytes32(abi.encodePacked(msg.sender, uint32(block.chainid))), // salt
-            hash // commitmentHash ( safe op hash)
+            _getDomainSeparator(),
+            hash.toEthSignedMessageHash() // hash of safeMfaOpHash
         );
 
         // check if the proof is valid
-        // signature == proof
         if (Verifier(verifier).verify(proof, publicInputs)) {
             // if proof is valid, return true
             return true;
@@ -219,19 +227,35 @@ contract PrivateOwnerValidator is ERC7579ValidatorBase {
 
     function _constructPublicInputs(
         bytes32 ownerHash,
-        bytes32 salt,
-        bytes32 commitmentHash
+        bytes32 domainSeparator,
+        bytes32 hash
     ) internal pure returns (bytes32[] memory) {
         bytes32[] memory publicInputs = new bytes32[](65);
         publicInputs[0] = ownerHash;
 
         for (uint256 i = 0; i < 32; i++) {
-            // Process salt
-            publicInputs[i + 1] = bytes32(uint256(uint8(salt[i])));
-            // Process commitmentHash
-            publicInputs[i + 33] = bytes32(uint256(uint8(commitmentHash[i])));
+            // Process domainSeparator
+            publicInputs[i + 1] = bytes32(uint256(uint8(domainSeparator[i])));
+            // Process hash
+            publicInputs[i + 33] = bytes32(uint256(uint8(hash[i])));
         }
         return publicInputs;
+    }
+
+    // TODO: domain separator may better have address(this) or other siloed salt
+    // suppose one person uses one private eoa as some of private signers in a Safe on a chain.
+    // observers can tell there are essentially the same signers in the group
+    // but it's challenging to put the pre-computed address of the signer adapter
+    // into ownerHash that is a param required at initialization
+    // a walkaround?: put a value the private owner can set is stored in this contract
+    function _getDomainSeparator() internal view returns (bytes32) {
+        return
+            keccak256(
+                abi.encodePacked(
+                    msg.sender, // safe
+                    block.chainid // chainId
+                )
+            );
     }
 
     /*//////////////////////////////////////////////////////////////////////////

@@ -1,17 +1,25 @@
 // SPDX-License-Identifier: AGPL-3.0-only
 pragma solidity ^0.8.25;
 
+import "@openzeppelin/contracts/proxy/utils/Initializable.sol";
+import "@openzeppelin/contracts/proxy/utils/UUPSUpgradeable.sol";
+
 import {IValidator} from "erc7579/interfaces/IERC7579Module.sol";
 import {ISignatureValidator} from "./interfaces/ISignatureValidator.sol";
 import {ISafe} from "./interfaces/ISafe.sol";
 
-/// This contract acts as safe owner and relays EIP1271 validation to given ERC7579 validator
+// for testing
 import {console2} from "forge-std/console2.sol";
 
 // TODO: should store safe/acc addr and block calls from other addrs in validation methods?
 // either address safe or mapping(address => bool) accounts. still 1 adapter to N Safes.
 
-contract Safe7579SignatureValidator is ISignatureValidator {
+/// This contract acts as safe owner and relays EIP1271 validation to given ERC7579 validator
+contract Safe7579SignatureValidator is
+    ISignatureValidator,
+    UUPSUpgradeable,
+    Initializable
+{
     error NotSafeOwner();
     error ValidatorNotInitialized();
     error InvalidSignature();
@@ -20,11 +28,22 @@ contract Safe7579SignatureValidator is ISignatureValidator {
     bytes4 internal constant EIP1271_MAGIC_VALUE_LEGACY = 0x20c13b0b;
     bytes4 internal constant EIP1271_FAILED_VALUE = 0xffffffff;
 
-    address public immutable validator;
+    address public safe;
+    address public validator;
 
-    constructor(address _validator, bytes memory data) {
-        IValidator(_validator).onInstall(data);
+    // constructor(address _validator, bytes memory data) {
+    //     IValidator(_validator).onInstall(data);
+    //     validator = _validator;
+    // }
+
+    function initialize(
+        address _safe
+        address _validator,
+        bytes memory data
+    ) public initializer {
+        safe = _safe;
         validator = _validator;
+        IValidator(_validator).onInstall(data);
     }
 
     // EIP-1271 function
@@ -110,5 +129,11 @@ contract Safe7579SignatureValidator is ISignatureValidator {
         }
 
         return false;
+    }
+
+    function _authorizeUpgrade(
+        address newImplementation
+    ) internal view override {
+        (newImplementation);
     }
 }

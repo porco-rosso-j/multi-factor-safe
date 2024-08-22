@@ -5,4 +5,4 @@ authors = ["@porco-rosso-j"]
 compiler_version = ">=0.19.4"
 
 [dependencies]
-ecrecover = { tag = "main", git = "https://github.com/porco-rosso-j/ecrecover-noir" }
+ecrecover = { tag = "main", git = "https://github.com/porco-rosso-j/ecrecover-noir/" }

@@ -3,8 +3,10 @@ import { useEffect, useState } from "react";
 
 import WalletConnect from "../../assets/walletconnect.svg";
 import { shortenAddress } from "../../utils/shortenAddr";
-import { SafeOwner, WCRequest } from "../../utils/types";
+import { SafeOwner, SignatureParam, WCRequest } from "../../utils/types";
 import { signerType } from "../../utils/constants";
+import { Signer } from "ethers";
+import { useUserContext } from "../../contexts";
 
 type WCApproveProps = {
 	isDarkTheme: boolean;
@@ -14,12 +16,14 @@ type WCApproveProps = {
 	setOpened: (value: boolean) => void;
 	isExecuted: boolean;
 	setIsExecuted: (value: boolean) => void;
-	handleSendApproveHashTx: (tx: string) => Promise<string>;
+	handleSendApproveHashTx: (param: SignatureParam) => Promise<string>;
 };
 
 export const WCApprove = (props: WCApproveProps) => {
-	const [password, setPassword] = useState<string>("");
+	const [password, setPassword] = useState<string>();
+	const [signatureParam, setSignatureParam] = useState<SignatureParam>();
 	const [isApproved, setIsApproved] = useState<boolean>(false);
+	const { signer } = useUserContext();
 
 	const web3wallet = props.wcRequest.web3wallet;
 	const requestContent = props.wcRequest.requestContent;
@@ -61,22 +65,48 @@ export const WCApprove = (props: WCApproveProps) => {
 
 	const handleApprove = async () => {
 		console.log("handleApprove...");
-		// onAcceptSessionRequest();
+
+		if (props.owner?.type === 3 && password) {
+			setSignatureParam({
+				password: password,
+			});
+		} else if (props.owner?.type === 4 && signer) {
+			setSignatureParam({
+				privateSigner: signer,
+			});
+		} else {
+			console.log("signatureParam is undefined");
+		}
+
 		setIsApproved(true);
 	};
 	const handleAfterApprove = async () => {
-		const txHash = await props.handleSendApproveHashTx(password);
+		if (!signatureParam) {
+			console.log("signatureParam is undefined");
+			return;
+		}
+		const txHash = await props.handleSendApproveHashTx(signatureParam);
 		props.setIsExecuted(true);
 		await onAcceptSessionRequest(txHash);
 	};
 
 	useEffect(() => {
-		if (props.opened && isApproved && password && !props.isExecuted) {
+		if (props.opened && isApproved && signatureParam && !props.isExecuted) {
 			handleAfterApprove();
 		}
 
 		// eslint-disable-next-line react-hooks/exhaustive-deps
-	}, [props, isApproved, password]);
+	}, [props, isApproved, signatureParam]);
+
+	// useEffect(() => {
+	// 	if (props.owner?.type === 3 && signer) {
+	// 		setSignatureParam({
+	// 			privateSigner: signer,
+	// 		});
+	// 	}
+
+	// 	// eslint-disable-next-line react-hooks/exhaustive-deps
+	// }, [props, signer, signatureParam, setSignatureParam]);
 
 	const textTextStyle = {
 		color: "black",
@@ -131,15 +161,28 @@ export const WCApprove = (props: WCApproveProps) => {
 								</Group>
 							)}
 
-							<TextInput
-								variant="filled"
-								radius="sm"
-								label="Password"
-								style={{ width: "80%" }}
-								width="150px"
-								placeholder="testpassword"
-								onChange={(e) => setPassword(e.target.value)}
-							/>
+							{props.owner?.type === 3 ? (
+								<TextInput
+									variant="filled"
+									radius="sm"
+									label="Password"
+									style={{ width: "80%" }}
+									width="150px"
+									placeholder="testpassword"
+									onChange={(e) => setPassword(e.target.value)}
+									// onChange={(e) => {
+									// 	setSignatureParam({
+									// 		password: e.target.value,
+									// 	});
+									// }}
+								/>
+							) : props.owner?.type === 4 ? (
+								<Text style={textTextStyle}>
+									{" "}
+									Connect Private Signer Wallet
+								</Text>
+							) : null}
+
 							<Group>
 								<Button
 									onClick={() => {
@@ -148,17 +191,7 @@ export const WCApprove = (props: WCApproveProps) => {
 								>
 									Reject
 								</Button>
-								<Button
-									onClick={() => {
-										if (password != "") {
-											handleApprove();
-										} else {
-											console.log("password is empty");
-										}
-									}}
-								>
-									Approve
-								</Button>
+								<Button onClick={() => handleApprove()}>Approve</Button>
 							</Group>
 						</>
 					) : (

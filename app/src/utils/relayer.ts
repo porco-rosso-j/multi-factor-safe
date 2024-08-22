@@ -25,7 +25,8 @@ export const sendApproveHashTx = async (
 	const tx = await signerAdapter.approveHashOnSafe(
 		safeAddress,
 		safeTxHash,
-		signature
+		signature,
+		{ gasLimit: 1000000 }
 	);
 	console.log("tx: ", tx);
 	const txReceipt = await tx.wait();

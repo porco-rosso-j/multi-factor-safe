@@ -1,5 +1,6 @@
 import { SessionTypes } from "@walletconnect/types";
 import { IWeb3Wallet } from "@walletconnect/web3wallet";
+import { Signer } from "ethers";
 
 export type Safe = {
 	address: string;
@@ -23,4 +24,21 @@ export type WCRequestContent = {
 	message: string;
 	topic: string;
 	response: any;
+};
+
+export type SignatureParam =
+	| PasswordParams
+	| PrivateEOAParams
+	| AnonAadhaarParams;
+
+export type PasswordParams = {
+	password: string;
+};
+
+export type PrivateEOAParams = {
+	privateSigner: Signer;
+};
+
+export type AnonAadhaarParams = {
+	qrCode: string;
 };

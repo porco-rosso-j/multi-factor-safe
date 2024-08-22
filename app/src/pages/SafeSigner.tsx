@@ -9,7 +9,7 @@ import WalletConnect from "../assets/walletconnect.svg";
 import { getSignerType } from "../utils/validator";
 import { WCConnect } from "../components/modals/WCConnect";
 import { WCApprove } from "../components/modals/WCApprove";
-import { SafeOwner, WCRequest } from "../utils/types";
+import { SafeOwner, SignatureParam, WCRequest } from "../utils/types";
 import { useSendApproveTxHash } from "../hooks/useApproveTxHash";
 
 type SafeSignerPageProps = {
@@ -75,7 +75,9 @@ export function SafeSigner(props: SafeSignerPageProps) {
 		setWcRequest(wcRequest);
 	};
 
-	const handleSendApproveHashTx = async (password: string): Promise<string> => {
+	const handleSendApproveHashTx = async (
+		param: SignatureParam
+	): Promise<string> => {
 		console.log("handleSendApproveHashTx...");
 		if (!wcRequest) {
 			return "";
@@ -90,7 +92,7 @@ export function SafeSigner(props: SafeSignerPageProps) {
 			safe.address,
 			wcRequest.requestContent.message,
 			selectedOwner,
-			password
+			param
 		);
 	};
 

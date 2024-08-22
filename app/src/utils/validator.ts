@@ -6,7 +6,7 @@ const validatorMap = new Map<string, number>([
 	["0x0000000000000000000000000000000000000001", 1],
 	["0x0000000000000000000000000000000000000000", 2],
 	["0xAc1c9DAac25f4BB101437903E3EB4Be8031d1EBd", 3],
-	["0x0000000000000000000000000000000000000000", 4],
+	["0xCFF0bfcD80AbE450C2C87eE6c630A548E9f1d684", 4],
 ]);
 
 const signerAdapterInterface = new ethers.Interface([
@@ -31,11 +31,9 @@ export const getSignerType = async (address: string): Promise<number> => {
 			return 1;
 		}
 
-		if (validatorMap.has(validatorAddress)) {
-			return validatorMap.get(validatorAddress) as number;
-		} else {
-			return 1;
-		}
+		return validatorMap.has(validatorAddress)
+			? (validatorMap.get(validatorAddress) as number)
+			: 1;
 	} else {
 		return 0;
 	}

@@ -39,14 +39,16 @@ export function ConnectButton(props: ConnectButtonProps) {
 	useEffect(() => {
 		console.log("useEffect for recoverSigner... ");
 		const recoverSigner = async () => {
-			if (safe) {
-				if (safe.address !== address) {
-					console.log("signer should be the same as safe. disconnecting...");
-					disconnect();
-				}
-			} else {
-				saveSigner(await getSigner(walletProvider));
-			}
+			// if (safe) {
+			// 	if (safe.address !== address) {
+			// 		console.log("signer should be the same as safe. disconnecting...");
+			// 		disconnect();
+			// 	}
+			// } else {
+			// 	saveSigner(await getSigner(walletProvider));
+			// }
+
+			saveSigner(await getSigner(walletProvider));
 		};
 
 		if (isConnected && walletProvider && address && signer == undefined) {
