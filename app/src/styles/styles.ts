@@ -39,3 +39,10 @@ export const BottunStyle = (isDarkTheme: boolean) => {
 		backgroundColor: isDarkTheme ? "white" : "black",
 	};
 };
+
+export const TextStyle = (isDarkTheme: boolean) => {
+	return {
+		color: isDarkTheme ? "white" : "black",
+		TextAlign: "center",
+	};
+};

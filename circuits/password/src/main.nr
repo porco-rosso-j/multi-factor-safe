@@ -50,3 +50,21 @@ fn test_main() {
     // local: 0x16e1253d322e880f7431ece012507afb4638b74156c8bd99bb37d08a170d9887
     // sepolia: 0x032e60c0d43ea621d6f898a9596f7ca72cb6c127493094d691c032b66fa1f056
 }
+
+#[test]
+fn test_main_local() {
+    // 
+    let preimage: [Field; 10] = [116, 101, 115, 116, 0, 0, 0, 0, 0, 0]; // preimage == "test"
+    let password_hash: Field = 0x1520b34fabf874ab7605f4690e7c36a673c511b7dfc2b64941113a82aab117a5;
+    
+    // salt = chain id for test
+    let salt: [u8;32] = [
+        0, 0, 0, 0, 0, 0, 0, 0, 0,
+        0, 0, 0, 0, 0, 0, 0, 0, 0,
+        0, 0, 0, 0, 0, 0, 0, 0, 0,
+        0, 0, 0, 122, 105 // local
+    ]; 
+
+    let commitment_hash: [u8;32] = [80, 197, 137, 207, 41, 187, 204, 203, 72, 204, 122, 206, 234, 29, 196, 246, 57, 197, 112, 74, 15, 50, 178, 165, 222, 74, 16, 201, 191, 160, 20, 232];
+    main(preimage, password_hash, salt, commitment_hash);
+}

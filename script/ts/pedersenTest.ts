@@ -66,26 +66,3 @@ async function main() {
 }
 
 main();
-
-/*
-export async function getSecretBytesAndHashFromSecret(
-	_secret: string,
-	salt: string[]
-): Promise<SecretBytesAndHash> {
-	const PaddedSecretBytes = await getPaddedSecretBytes(_secret);
-	console.log("PaddedSecretBytes: ", PaddedSecretBytes);
-
-	const _hash = await pedersenHash(PaddedSecretBytes);
-	console.log("_hash: ", _hash);
-
-	const hash = await pedersenHash([
-		BigInt(_hash),
-		...salt.map((s) => BigInt(s)),
-	]);
-	console.log("hash: ", hash);
-	return {
-		secretBytes: PaddedSecretBytes.map((s) => s.toString()),
-		secretHash: hash,
-	};
-}
-*/

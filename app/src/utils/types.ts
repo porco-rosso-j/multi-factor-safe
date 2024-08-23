@@ -40,5 +40,5 @@ export type PrivateEOAParams = {
 };
 
 export type AnonAadhaarParams = {
-	qrCode: string;
+	proof: string;
 };

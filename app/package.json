@@ -1,5 +1,5 @@
 {
-  "name": "w3w-web",
+  "name": "safe-mfa-web",
   "private": true,
   "version": "0.0.0",
   "type": "module",
@@ -10,6 +10,9 @@
     "preview": "vite preview"
   },
   "dependencies": {
+    "@anon-aadhaar/contracts": "2.4.0",
+    "@anon-aadhaar/core": "2.4.0",
+    "@anon-aadhaar/react": "2.4.0",
     "@aztec/bb.js": "0.38.0",
     "@biomejs/biome": "^1.6.0",
     "@mantine/core": "^7.3.2",

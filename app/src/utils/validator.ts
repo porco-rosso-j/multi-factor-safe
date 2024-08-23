@@ -4,7 +4,7 @@ import { provider } from "./relayer";
 const validatorMap = new Map<string, number>([
 	["0x0000000000000000000000000000000000000000", 0],
 	["0x0000000000000000000000000000000000000001", 1],
-	["0x0000000000000000000000000000000000000000", 2],
+	["0xd1B1602f3a801A7Bb1076170aC3b65d39132ae2e", 2],
 	["0xAc1c9DAac25f4BB101437903E3EB4Be8031d1EBd", 3],
 	// ["0xCFF0bfcD80AbE450C2C87eE6c630A548E9f1d684", 4],
 	["0x86b185121035AbcbBc186a6ba442ecFbe9E23f0d", 4],
@@ -51,33 +51,3 @@ async function isContract(address: string): Promise<boolean> {
 		return false; // In case of any error, assume not a contract
 	}
 }
-
-// export const getSafe = async (address: string): Promise<Safe | undefined> => {
-// 	const safeInterface = new ethers.Interface([
-// 		`function getOwners() view returns (address[] memory)`,
-// 		`function getThreshold() view returns (uint256)`,
-// 	]);
-// 	const ownerData = safeInterface.encodeFunctionData("getOwners");
-// 	const thresholdData = safeInterface.encodeFunctionData("getThreshold");
-// 	let owners;
-// 	let threshold;
-
-// 	try {
-// 		owners = safeInterface.decodeFunctionResult(
-// 			"getOwners",
-// 			await provider.call({ to: address, data: ownerData })
-// 		)[0];
-
-// 		threshold = safeInterface.decodeFunctionResult(
-// 			"getThreshold",
-// 			await provider.call({ to: address, data: thresholdData })
-// 		)[0];
-// 		console.log("owners: ", owners);
-// 		console.log("threshold: ", threshold);
-// 	} catch (err) {
-// 		console.log("err: ", err);
-// 		return undefined;
-// 	}
-
-// 	return { address, owners, threshold: Number(threshold) };
-// };

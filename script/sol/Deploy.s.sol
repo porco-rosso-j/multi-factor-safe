@@ -11,6 +11,7 @@ import {PasswordValidator} from "src/validators/password/PasswordValidator.sol";
 import {PrivateOwnerValidator} from "src/validators/private-owner/PrivateOwnerValidator.sol";
 import {Safe7579SignatureValidator} from "src/Safe7579SignatureValidator.sol";
 import {Safe7579SignatureValidatorFactory} from "src/Safe7579SignatureValidatorFactory.sol";
+import {AadhaarValidator} from "src/validators/aadhaar/AadhaarValidator.sol";
 
 // forge script script/sol/Deploy.s.sol:DeploySignerValidator --broadcast --rpc-url https://eth-sepolia.g.alchemy.com/v2/JG3mOl7GCd3oU_skAHEpl7qWDsoyitZA --legacy
 
@@ -20,6 +21,8 @@ contract DeploySignerValidator is Script {
 
     Safe7579SignatureValidator signerAdapterImpl;
     Safe7579SignatureValidatorFactory signerAdapterFactory;
+    address signerAdapterFactoryAddress =
+        0x2BC704F24B9c047E157dFf95C8595e0d9e5938FD;
 
     PasswordVerifier passwordVerifier;
     PasswordValidator passwordValidator;
@@ -29,8 +32,10 @@ contract DeploySignerValidator is Script {
     PrivateOwnerValidator privateOwnerValidator;
     Safe7579SignatureValidator privateOwnerSignerAdapter;
 
-    // AnonAadhaarValidator anonAadhaarValidator;
-    // Safe7579SignatureValidator anonAadhaarSignerAdapter;
+    // https://github.com/anon-aadhaar/anon-aadhaar/blob/v2.3.1/packages/contracts/deployed-contracts/sepolia.json
+    address anonAaadhaar = 0x6bE8Cec7a06BA19c39ef328e8c8940cEfeF7E281;
+    AadhaarValidator anonAadhaarValidator;
+    Safe7579SignatureValidator anonAadhaarSignerAdapter;
 
     // -s runDeployFactoryAndImpl
     function runDeployFactoryAndImpl() public {
@@ -60,6 +65,7 @@ contract DeploySignerValidator is Script {
     function runVerifierAndValidatorDeploy() external {
         vm.startBroadcast(deployerPrivateKey);
 
+        ///// Password /////
         // passwordVerifier = new PasswordVerifier();
         // passwordValidator = new PasswordValidator(address(passwordVerifier));
 
@@ -68,15 +74,16 @@ contract DeploySignerValidator is Script {
         // console2.logString("passwordValidator: ");
         // console2.logAddress(address(passwordValidator));
 
-        privateOwnerVerifier = new PrivateOwnerVerifier();
-        privateOwnerValidator = new PrivateOwnerValidator(
-            address(privateOwnerVerifier)
-        );
+        ///// Private Owner /////
+        // privateOwnerVerifier = new PrivateOwnerVerifier();
+        // privateOwnerValidator = new PrivateOwnerValidator(
+        //     address(privateOwnerVerifier)
+        // );
 
-        console2.logString("privateOwnerVerifier: ");
-        console2.logAddress(address(privateOwnerVerifier));
-        console2.logString("privateOwnerValidator: ");
-        console2.logAddress(address(privateOwnerValidator));
+        // console2.logString("privateOwnerVerifier: ");
+        // console2.logAddress(address(privateOwnerVerifier));
+        // console2.logString("privateOwnerValidator: ");
+        // console2.logAddress(address(privateOwnerValidator));
 
         /*
         privateOwnerVerifier: 
@@ -84,6 +91,12 @@ contract DeploySignerValidator is Script {
         privateOwnerValidator: 
         0x86b185121035AbcbBc186a6ba442ecFbe9E23f0d
         */
+
+        ///// Anon Aadhaar /////
+        anonAadhaarValidator = new AadhaarValidator(anonAaadhaar);
+        console2.logString("anonAadhaarValidator: ");
+        console2.logAddress(address(anonAadhaarValidator));
+        /// 0xd1B1602f3a801A7Bb1076170aC3b65d39132ae2e
 
         vm.stopBroadcast();
     }
@@ -93,7 +106,6 @@ contract DeploySignerValidator is Script {
     function runPasswordValidatorDeploy() external {
         vm.startBroadcast(deployerPrivateKey);
 
-        // TODO: passwordHash should include domain separator
         bytes32 passwordHash = 0x032e60c0d43ea621d6f898a9596f7ca72cb6c127493094d691c032b66fa1f056;
         address _passwordValidator = 0xAc1c9DAac25f4BB101437903E3EB4Be8031d1EBd;
 
@@ -115,25 +127,18 @@ contract DeploySignerValidator is Script {
     function runPrivateOwnerValidatorDeploy() external {
         vm.startBroadcast(deployerPrivateKey);
 
-        signerAdapterFactory = Safe7579SignatureValidatorFactory(
-            0x2BC704F24B9c047E157dFf95C8595e0d9e5938FD
-        );
-
         bytes32 ownerHash = 0x137ad2247d8e089ca5dc03f9a70e5bc68392ac2916495968a80c35582c1a3c37;
         address _privateOwnerValidator = 0x86b185121035AbcbBc186a6ba442ecFbe9E23f0d;
 
-        if (
-            !signerAdapterFactory.getIsValidatorEnabled(_privateOwnerValidator)
-        ) {
-            signerAdapterFactory.addValidator(_privateOwnerValidator);
-        }
+        addValidatorIfNotEnabled(_privateOwnerValidator);
 
         address _privateOwnerSignerAdapter = address(
-            signerAdapterFactory.createSafe7579SignatureValidator(
-                _privateOwnerValidator,
-                abi.encode(ownerHash),
-                0
-            )
+            Safe7579SignatureValidatorFactory(signerAdapterFactoryAddress)
+                .createSafe7579SignatureValidator(
+                    _privateOwnerValidator,
+                    abi.encode(ownerHash),
+                    0
+                )
         );
         console2.logString("privateOwnerSignerAdapter: ");
         console2.logAddress(_privateOwnerSignerAdapter);
@@ -144,28 +149,33 @@ contract DeploySignerValidator is Script {
         vm.stopBroadcast();
     }
 
-    // function run() external {
-    //     vm.startBroadcast(deployerPrivateKey);
+    // -s runAonAadhaarValidatorDeploy
+    function runAonAadhaarValidatorDeploy() external {
+        vm.startBroadcast(deployerPrivateKey);
 
-    //     passwordVerifier = new PasswordVerifier();
-    //     passwordValidator = new PasswordValidator(address(passwordVerifier));
-    //     passwordSignerAdapter = new Safe7579SignatureValidator(
-    //         address(passwordValidator),
-    //         abi.encode(passwordHash)
-    //     );
+        uint userDataHash = 9853173681030454506021293959134843318300866728072931709888725731941693583898;
+        address _anonAaadhaarValidator = 0xd1B1602f3a801A7Bb1076170aC3b65d39132ae2e;
 
-    //     console2.logAddress(address(passwordVerifier));
-    //     console2.logAddress(address(passwordValidator));
-    //     console2.logAddress(address(passwordSignerAdapter));
+        addValidatorIfNotEnabled(_anonAaadhaarValidator);
 
-    //     // 0x3A3C512bB2c96331D3f6E9ca6d3e484E80adA8a3
-    //     // 0x6c10f1B3aA8Ac413decb1C75116e43FD8BCFFfaf
-    //     // 0xe30e892F0c2C571aC94F9cBd2754B1285E29e861
+        address _anonAadhaarSignerAdapter = address(
+            Safe7579SignatureValidatorFactory(signerAdapterFactoryAddress)
+                .createSafe7579SignatureValidator(
+                    _anonAaadhaarValidator,
+                    abi.encode(userDataHash),
+                    0
+                )
+        );
+        console2.logString("anonAadhaarSignerAdapter: ");
+        console2.logAddress(_anonAadhaarSignerAdapter);
+        // 0x90d648969AaCCBbc56C22cfCf8a41765820EBe9d
 
-    //     // 0x29AD8548663b07807180a04E3B3943984b1CAFCA
-    //     // 0xAc1c9DAac25f4BB101437903E3EB4Be8031d1EBd
-    //     // 0x6C75bcD0F0c1A0ac23bE69e5CF10DF20C405f1C6
+        vm.stopBroadcast();
+    }
 
-    //     vm.stopBroadcast();
-    // }
+    function addValidatorIfNotEnabled(address _validator) public {
+        if (!signerAdapterFactory.getIsValidatorEnabled(_validator)) {
+            signerAdapterFactory.addValidator(_validator);
+        }
+    }
 }

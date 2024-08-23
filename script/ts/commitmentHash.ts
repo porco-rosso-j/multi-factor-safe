@@ -29,7 +29,15 @@ export async function parseUint8ArrayToBytes32(
 	return array;
 }
 
+// for password test
 getCommitmentHash(
-	"0x09d4E28B9710c097A14A46099De60FBaACE8f492",
-	"0x3bdea30bbfc5b7ad564b0bd2ae76bbf432c055feb740e1919bf225c7db7e0422"
+	"0x595EE62794254fFD1Ea860aE8E8936E39B48e16b",
+	"0x12bd7a332765c0c0efb5015fb23ec0654567604f547b0dbe0ca94b20ad5fbf40"
 );
+// 0x50c589cf29bbcccb48cc7aceea1dc4f639c5704a0f32b2a5de4a10c9bfa014e8
+
+// for anon-aadhaar test
+// getCommitmentHash(
+// 	"0x41fae757dc522bF485F23eFBf19304F014A33088",
+// 	"0x12bd7a332765c0c0efb5015fb23ec0654567604f547b0dbe0ca94b20ad5fbf40"
+// );

@@ -6,6 +6,7 @@ import { HashRouter, Route, Routes } from "react-router-dom";
 import { Recovery, SafeSigner } from "./pages/index";
 import { useTheme, UserContextProviderComponent } from "./contexts";
 import { Account, Footer, Header } from "./components";
+import { AnonAadhaarProvider } from "@anon-aadhaar/react";
 
 export default function App() {
 	const { isDarkTheme, toggleTheme } = useTheme();
@@ -24,38 +25,47 @@ export default function App() {
 				<AppShell.Main>
 					<Notifications />
 					<UserContextProviderComponent>
-						<HashRouter>
-							<Header isDarkTheme={isDarkTheme} toggleTheme={toggleTheme} />
-							<Box
-								style={{
-									display: "flex",
-									flexDirection: "column",
-									minHeight: "90vh",
-								}}
-							>
-								<Stack
-									align="center"
-									justify="space-round"
-									px={30}
-									style={{ flexGrow: 1 }}
+						<AnonAadhaarProvider
+							_artifactslinks={{
+								zkey_url: "/public/circuit_final.zkey",
+								vkey_url: "/public/vkey.json",
+								wasm_url: "/public/aadhaar-verifier.wasm",
+							}}
+							_useTestAadhaar={true}
+						>
+							<HashRouter>
+								<Header isDarkTheme={isDarkTheme} toggleTheme={toggleTheme} />
+								<Box
+									style={{
+										display: "flex",
+										flexDirection: "column",
+										minHeight: "90vh",
+									}}
 								>
-									<Stack>
-										<Account isDarkTheme={isDarkTheme} />
-										<Routes>
-											<Route
-												path="/"
-												element={<SafeSigner isDarkTheme={isDarkTheme} />}
-											/>
-											<Route
-												path="/recovery"
-												element={<Recovery isDarkTheme={isDarkTheme} />}
-											/>
-										</Routes>
+									<Stack
+										align="center"
+										justify="space-round"
+										px={30}
+										style={{ flexGrow: 1 }}
+									>
+										<Stack>
+											<Account isDarkTheme={isDarkTheme} />
+											<Routes>
+												<Route
+													path="/"
+													element={<SafeSigner isDarkTheme={isDarkTheme} />}
+												/>
+												<Route
+													path="/recovery"
+													element={<Recovery isDarkTheme={isDarkTheme} />}
+												/>
+											</Routes>
+										</Stack>
 									</Stack>
-								</Stack>
-								<Footer isDarkTheme={isDarkTheme} />
-							</Box>
-						</HashRouter>
+									<Footer isDarkTheme={isDarkTheme} />
+								</Box>
+							</HashRouter>
+						</AnonAadhaarProvider>
 					</UserContextProviderComponent>
 				</AppShell.Main>
 			</AppShell>

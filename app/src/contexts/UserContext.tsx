@@ -6,7 +6,7 @@ import {
 	useEffect,
 } from "react";
 import { Signer } from "ethers";
-import { Safe } from "../utils/types";
+import { Safe, SafeOwner } from "../utils/types";
 
 const UserContext = createContext<UserContextState | null>(null);
 
@@ -14,11 +14,13 @@ export const UserContextProvider = UserContext.Provider;
 
 interface UserContextState {
 	signer: Signer | undefined;
-	safe: Safe | undefined;
 	signerAdapter: Signer | undefined;
+	safe: Safe | undefined;
+	selectedOwner: SafeOwner | undefined;
 	saveSigner: (signer: Signer) => void;
-	saveSafe: (safe: Safe) => void;
 	saveSignerAdapter: (signerAdapter: Signer) => void;
+	saveSafe: (safe: Safe) => void;
+	saveSelectedOwner: (selectedOwner: SafeOwner | undefined) => void;
 	removeInstances: () => void;
 }
 
@@ -38,20 +40,21 @@ export const UserContextProviderComponent: React.FC<UserContextProps> = ({
 	children,
 }) => {
 	const [signer, setSigner] = useState<Signer | undefined>();
-	const [safe, setSafe] = useState<Safe | undefined>();
 	const [signerAdapter, setSignerAdapter] = useState<Signer | undefined>();
+	const [safe, setSafe] = useState<Safe | undefined>();
+	const [selectedOwner, setSelectedOwner] = useState<SafeOwner | undefined>();
 
 	const removeInstances = () => {
 		setSigner(undefined);
 		setSafe(undefined);
 		setSignerAdapter(undefined);
+		setSelectedOwner(undefined);
 		localStorage.removeItem(`safe`);
 		localStorage.removeItem(`signer_adapter`);
 	};
 
 	const saveSigner = (_signer: Signer) => {
 		setSigner(_signer);
-		// localStorage.setItem(`signer`, JSON.stringify(_signer));
 	};
 
 	const saveSafe = (_safe: Safe) => {
@@ -63,7 +66,14 @@ export const UserContextProviderComponent: React.FC<UserContextProps> = ({
 
 	const saveSignerAdapter = (_signerAdapter: Signer) => {
 		setSignerAdapter(_signerAdapter);
-		// localStorage.setItem(`signer_adapter`, JSON.stringify(_signerAdapter));
+	};
+
+	const saveSelectedOwner = (_selectedOwner: SafeOwner | undefined) => {
+		setSelectedOwner(_selectedOwner);
+		localStorage.setItem(
+			`selected_owner`,
+			JSON.stringify(_selectedOwner ?? null)
+		);
 	};
 
 	useEffect(() => {
@@ -78,13 +88,27 @@ export const UserContextProviderComponent: React.FC<UserContextProps> = ({
 		}
 	}, [safe]);
 
+	useEffect(() => {
+		console.log("[UserContextProviderComponent] useEffect selectedOwner... ");
+		console.log("selectedOwner: ", selectedOwner);
+		if (!selectedOwner) {
+			const _selectedOwner = localStorage.getItem("selected_owner");
+			console.log("_selectedOwner: ", _selectedOwner);
+			if (_selectedOwner && _selectedOwner !== "undefined") {
+				setSelectedOwner(JSON.parse(_selectedOwner));
+			}
+		}
+	}, [selectedOwner]);
+
 	const contextValue: UserContextState = {
 		signer,
-		safe,
 		signerAdapter,
+		safe,
+		selectedOwner,
 		saveSigner,
 		saveSafe,
 		saveSignerAdapter,
+		saveSelectedOwner,
 		removeInstances,
 	};
 	return (

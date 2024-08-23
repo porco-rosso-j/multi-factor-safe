@@ -12,7 +12,6 @@ import { SafeOwner, SignatureParam } from "../utils/types";
 import { sendApproveHashTx } from "../utils/relayer";
 import { Signer, ethers } from "ethers";
 import {
-	// getDomainSeparator,
 	getPrivateOwnerHash,
 	getSafeMFAOpHash,
 	recoverPubKey,
@@ -47,7 +46,6 @@ export function useSendApproveTxHash() {
 			signature = await getPrivateEOASignature(
 				param.privateSigner,
 				safeTxHash,
-				safeAddress,
 				owner.address
 			);
 		} else {
@@ -72,10 +70,27 @@ export function useSendApproveTxHash() {
 	};
 }
 
+export const getAadhaarSignature = async (
+	qrData: string,
+	safeTxHash: string,
+	signerAdapterAddress: string
+): Promise<string | undefined> => {
+	try {
+		// signal
+		const safeMFAOpHash = await getSafeMFAOpHash(
+			signerAdapterAddress,
+			safeTxHash
+		);
+		return "";
+	} catch (error) {
+		console.error("Error signing message", error);
+	}
+};
+
 export const getPasswordSignature = async (
 	password: string,
 	safeTxHash: string,
-	address: string
+	signerAdapterAddress: string
 ): Promise<string | undefined> => {
 	try {
 		const passwordCircuit = PasswordCircuit as CompiledCircuit;
@@ -91,7 +106,7 @@ export const getPasswordSignature = async (
 		);
 
 		const commitmentHash = await getCommitmentHash(
-			address as string,
+			signerAdapterAddress as string,
 			safeTxHash
 		);
 
@@ -121,7 +136,6 @@ export const getPasswordSignature = async (
 export const getPrivateEOASignature = async (
 	signer: Signer,
 	safeTxHash: string,
-	safeAddress: string,
 	signerAdapterAddress: string
 ): Promise<string | undefined> => {
 	console.log("safeTxHash in getPrivateEOASignature: ", safeTxHash);
@@ -129,16 +143,6 @@ export const getPrivateEOASignature = async (
 		const privateEoACircuit = PrivateEoACircuit as CompiledCircuit;
 		const backend = new BarretenbergBackend(privateEoACircuit);
 		const noir = new Noir(privateEoACircuit, backend);
-
-		// const chainId = (await signer.provider?.getNetwork())?.chainId;
-
-		// const chainId = 11155111;
-		// console.log("chainId: ", chainId);
-		// const domainSeparator = await getDomainSeparator(
-		// 	safeAddress,
-		// 	Number(chainId)
-		// );
-		// console.log("domainSeparator: ", domainSeparator);
 
 		const ownerHash = await getPrivateOwnerHash(await signer.getAddress());
 		console.log("ownerHash: ", ownerHash);
@@ -160,20 +164,9 @@ export const getPrivateEOASignature = async (
 		const pubkey = await recoverPubKey(messageHash, ecdsaSignature);
 		console.log("pubkey: ", pubkey);
 
-		// const input = {
-		// 	owner_hash: ownerHash,
-		// 	domain_separator: domainSeparator,
-		// 	hashed_message: await parseHexToStrArray(messageHash),
-		// 	pub_key: await parseHexToStrArray(pubkey.slice(1, 65)),
-		// 	signature: await parseHexToStrArray(ecdsaSignature.slice(0, -1)),
-		// };
-
 		const parsedMessageHash = await parseHexToStrArray(messageHash);
-		console.log("parsedMessageHash: ", parsedMessageHash);
 		const parsedPubKey = await parseHexToStrArray(pubkey);
-		console.log("parsedPubKey: ", parsedPubKey);
 		const parsedSignature = await parseHexToStrArray(ecdsaSignature);
-		console.log("parsedSignature: ", parsedSignature);
 
 		const input = {
 			owner_hash: ownerHash,
@@ -190,8 +183,8 @@ export const getPrivateEOASignature = async (
 		console.log("proof: ", proof.proof);
 		console.log("public inputs: ", proof.publicInputs);
 
-		const isValid = await noir.verifyProof(proof);
-		console.log("isValid: ", isValid);
+		// const isValid = await noir.verifyProof(proof);
+		// console.log("isValid: ", isValid);
 
 		const proofStr =
 			"0x" +

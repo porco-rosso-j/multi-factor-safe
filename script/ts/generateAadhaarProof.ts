@@ -15,7 +15,7 @@ const testQRData =
 
 // safe op hash
 const signal =
-	"0x687f1fe30ca2db05608adc61300aa7073ba2492e9fa51d18844cdb99cffed07d";
+	"0xe627de9c39bdea7361a4f5a7ad40eb920fb3aa39be2caf20ffc75476412b2e68";
 
 const nullifierSeed = 1234;
 

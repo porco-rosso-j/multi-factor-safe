@@ -5,7 +5,6 @@ import { AccountBoxStyle } from "../styles/styles";
 import { CopyButtonIcon } from "../components";
 import { shortenAddress } from "../utils/shortenAddr";
 import { getSafe } from "../utils/safe";
-import { Safe } from "../utils/types";
 
 /*
 TODO: 

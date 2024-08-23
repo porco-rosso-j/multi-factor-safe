@@ -7,6 +7,7 @@ import { SafeOwner, SignatureParam, WCRequest } from "../../utils/types";
 import { signerType } from "../../utils/constants";
 import { Signer } from "ethers";
 import { useUserContext } from "../../contexts";
+import { Aadhaar } from "../Aadhaar";
 
 type WCApproveProps = {
 	isDarkTheme: boolean;
@@ -24,6 +25,9 @@ export const WCApprove = (props: WCApproveProps) => {
 	const [signatureParam, setSignatureParam] = useState<SignatureParam>();
 	const [isApproved, setIsApproved] = useState<boolean>(false);
 	const { signer } = useUserContext();
+
+	console.log("opened: ", props.opened);
+	console.log("type: ", props.owner?.type);
 
 	const web3wallet = props.wcRequest.web3wallet;
 	const requestContent = props.wcRequest.requestContent;
@@ -124,14 +128,24 @@ export const WCApprove = (props: WCApproveProps) => {
 				}}
 				withCloseButton={true}
 				centered
+				size="xl"
+				style={{
+					height: "700px",
+					width: "100%",
+				}}
+				// fullScreen={true}
 			>
 				<Stack
 					align="center"
-					mb={20}
-					px={10}
+					// mb={20}
+					// px={10}
 					style={{
-						maxHeight: "310px",
-						overflowY: "auto",
+						// maxHeight: "310px",
+						// overflowY: "auto",
+						width: "100%" /* Full width */,
+						height: "100%" /* Full height */,
+						maxWidth: "150%",
+						maxHeight: "150%",
 					}}
 				>
 					<img src={WalletConnect} alt="delivery" height={50} width={50} />
@@ -161,7 +175,25 @@ export const WCApprove = (props: WCApproveProps) => {
 								</Group>
 							)}
 
-							{props.owner?.type === 3 ? (
+							{props.owner?.type === 2 ? (
+								// <TextInput
+								// 	variant="filled"
+								// 	radius="sm"
+								// 	label="Password"
+								// 	style={{ width: "80%" }}
+								// 	width="150px"
+								// 	placeholder="testpassword"
+								// 	onChange={(e) => setPassword(e.target.value)}
+								// 	// onChange={(e) => {
+								// 	// 	setSignatureParam({
+								// 	// 		password: e.target.value,
+								// 	// 	});
+								// 	// }}
+								// />
+								<>
+									<Aadhaar address={""} safeMFAOpHash={"safeMFAOpHash"} />
+								</>
+							) : props.owner?.type === 3 ? (
 								<TextInput
 									variant="filled"
 									radius="sm"

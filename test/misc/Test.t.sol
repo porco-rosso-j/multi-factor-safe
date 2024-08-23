@@ -110,23 +110,6 @@ contract TTest is Test {
         console2.logBool(ret);
     }
 
-    // // forge test --match-test test_getK256Signature -vvv
-    // function test_getK256Signature() public {
-    //     // address deployerAddress = vm.envAddress("ADDRESS");
-    //     uint256 privateKey = vm.envUint("PRIVATE_KEY");
-
-    //     (uint8 v, bytes32 r, bytes32 s) = Vm(VM_ADDR).sign(
-    //         privateKey,
-    //         bytes32(
-    //             0x032e60c0d43ea621d6f898a9596f7ca72cb6c127493094d691c032b66fa1f056
-    //         )
-    //     );
-
-    //     bytes memory signature = abi.encodePacked(r, s, v);
-    //     console2.logBytes(signature);
-    //     // 0xbf26330415a5eb86b1daf960c56a568ba9bb5b242c64e41eced58366796e82bd1fd0a574bd3893d233c3d4c2bc63907704ce75a1a115b5c6d39363fa629a3a191c
-    // }
-
     // forge test --match-test test_getK256Signature -vvv
     function test_getK256Signature() public {
         // address deployerAddress = vm.envAddress("ADDRESS");
