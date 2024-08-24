@@ -23,13 +23,10 @@ export function SafeSigner(props: SafeSignerPageProps) {
 	const { sendApproveTxHash } = useSendApproveTxHash();
 	const { signer, safe, selectedOwner, saveSelectedOwner } = useUserContext();
 	const [owners, setOwners] = useState<SafeOwner[]>([]);
-	console.log("safe in SafeSigner page: ", safe);
 
 	const [wcConnectOpened, setWCConnectOpened] = useState(false);
 	const [isExecuted, setIsExecuted] = useState(false);
 	const [isApprovalRequested, setIsApprovalRequested] = useState(false);
-	console.log("wcConnectOpened: ", wcConnectOpened);
-	console.log("selectedOwner: ", selectedOwner);
 
 	const {
 		web3wallet,
@@ -40,7 +37,8 @@ export function SafeSigner(props: SafeSignerPageProps) {
 		pair,
 		setPairingCode,
 		setIsWCConnected,
-	} = useWalletConnect(selectedOwner);
+	} = useWalletConnect();
+	// } = useWalletConnect(selectedOwner);
 
 	useEffect(() => {
 		console.log("useEffect in SafeSigner...");
@@ -84,6 +82,9 @@ export function SafeSigner(props: SafeSignerPageProps) {
 		param: SignatureParam
 	): Promise<string> => {
 		console.log("handleSendApproveHashTx...");
+		console.log("selectedOwner: ", selectedOwner);
+		console.log("wcRequest: ", wcRequest);
+		console.log("safe: ", safe);
 		if (!wcRequest) {
 			return "";
 		}
@@ -93,6 +94,7 @@ export function SafeSigner(props: SafeSignerPageProps) {
 		if (!selectedOwner) {
 			return "";
 		}
+
 		return await sendApproveTxHash(
 			safe.address,
 			wcRequest.requestContent.message,
@@ -229,15 +231,6 @@ export function SafeSigner(props: SafeSignerPageProps) {
 						</Box>
 
 						{wcConnectOpened && (
-							// <WCConnect
-							// 	owner={selectedOwner}
-							// 	isDarkTheme={props.isDarkTheme}
-							// 	opened={wcConnectOpened}
-							// 	isWCConnected={isWCConnected}
-							// 	setIsWCConnected={setIsWCConnected}
-							// 	setOpened={setWCConnectOpened}
-							// 	handleSafeTxSession={handleSafeTxSession}
-							// />
 							<WCConnect
 								isDarkTheme={props.isDarkTheme}
 								setOpened={setWCConnectOpened}
@@ -279,7 +272,7 @@ export function SafeSigner(props: SafeSignerPageProps) {
 								{isApprovalRequested ? (
 									<Box
 										style={{ justifyContent: "center", alignItems: "center" }}
-										mt={20}
+										mt={10}
 									>
 										<Approve
 											isDarkTheme={props.isDarkTheme}
@@ -291,30 +284,37 @@ export function SafeSigner(props: SafeSignerPageProps) {
 										/>
 									</Box>
 								) : (
+									// TODO: add link to `Safe App`
+									// e.g. safe.global.app/home?safe=sep:0x4d8152386Ce4aC935d8Cfed93Ae06077025eAd9E
 									<>
-										<Text style={{ ...textTextStyle, textAlign: "center" }}>
+										<Text
+											my={10}
+											style={{ ...textTextStyle, textAlign: "center" }}
+										>
 											Initiate transaction in Safe App
 										</Text>
 									</>
 								)}
 							</>
-							<Group>
-								<Button>Back</Button>
-								<Button
-									onClick={() => {
-										web3wallet?.disconnectSession({
-											topic: session?.topic as string,
-											reason: getSdkError("USER_DISCONNECTED"),
-										});
-										// setSession(undefined);
-										setSession(undefined);
-										setIsWCConnected(false);
-										saveSelectedOwner(undefined);
-									}}
-								>
-									Disconnect
-								</Button>
-							</Group>
+
+							<Button
+								variant="filled"
+								color="gray"
+								mt={15}
+								onClick={() => {
+									web3wallet?.disconnectSession({
+										topic: session?.topic as string,
+										reason: getSdkError("USER_DISCONNECTED"),
+									});
+									// setSession(undefined);
+									setSession(undefined);
+									setIsWCConnected(false);
+									setIsApprovalRequested(false);
+									saveSelectedOwner(undefined);
+								}}
+							>
+								Disconnect
+							</Button>
 						</Stack>
 					</>
 				)}

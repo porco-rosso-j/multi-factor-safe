@@ -1,4 +1,12 @@
-import { Text, Group, Stack, Button, TextInput } from "@mantine/core";
+import {
+	Text,
+	Group,
+	Stack,
+	Button,
+	TextInput,
+	Box,
+	Anchor,
+} from "@mantine/core";
 import { useEffect, useState } from "react";
 
 import WalletConnect from "../assets/walletconnect.svg";
@@ -10,6 +18,7 @@ import { useUserContext } from "../contexts";
 import { Aadhaar } from "./Aadhaar";
 import { IWeb3Wallet } from "@walletconnect/web3wallet";
 import { useWalletConnect } from "../hooks/useWalletConnect";
+import { error } from "console";
 
 type ApproveProps = {
 	isDarkTheme: boolean;
@@ -21,21 +30,25 @@ type ApproveProps = {
 };
 
 export const Approve = (props: ApproveProps) => {
+	const { signer, safe } = useUserContext();
+
 	const [password, setPassword] = useState<string>();
 	const [aadhaarProof, setAadhaarProof] = useState<string>();
 	const [signatureParam, setSignatureParam] = useState<SignatureParam>();
-	const [isApproved, setIsApproved] = useState<boolean>(false);
-	const { signer } = useUserContext();
+
+	const [errorMessage, setErrorMessage] = useState<string>("");
+	const [txHash, setTxHash] = useState<string>("");
+	const [loading, setLoading] = useState<boolean>(false);
+	console.log("errorMessage: ", errorMessage);
 	const web3wallet = props.wcRequest.web3wallet;
 	const requestContent = props.wcRequest.requestContent;
 
-	const { _onAcceptSessionRequest, _onRejectSessionRequest } = useWalletConnect(
-		props.owner
-	);
+	const { _onAcceptSessionRequest, _onRejectSessionRequest } =
+		useWalletConnect();
 
 	console.log("type: ", props.owner?.type);
-	console.log("props.wcRequest: ", props.wcRequest);
-	console.log("requestContent: ", requestContent);
+	// console.log("props.wcRequest: ", props.wcRequest);
+	// console.log("requestContent: ", requestContent);
 
 	const onAcceptSessionRequest = async (txHash: string) => {
 		_onAcceptSessionRequest(web3wallet, txHash, requestContent);
@@ -46,46 +59,67 @@ export const Approve = (props: ApproveProps) => {
 	};
 	const handleApprove = async () => {
 		console.log("handleApprove...");
+		setErrorMessage("");
+		setLoading(true);
 
-		if (props.owner?.type === 2 && aadhaarProof) {
+		if (props.owner?.type === 2) {
+			if (!aadhaarProof) {
+				setErrorMessage("Generate Aadhaar Proof");
+				return;
+			}
 			setSignatureParam({
 				proof: aadhaarProof,
 			});
-		} else if (props.owner?.type === 3 && password) {
+		} else if (props.owner?.type === 3) {
+			if (!password) {
+				setErrorMessage("Enter password");
+				return;
+			}
 			setSignatureParam({
 				password: password,
 			});
 		} else if (props.owner?.type === 4 && signer) {
+			if (!signer) {
+				setErrorMessage("Signer Not Connected");
+				return;
+			}
 			setSignatureParam({
 				privateSigner: signer,
 			});
 		} else {
 			console.log("signatureParam is undefined");
+			setErrorMessage("Type Not Supported");
 		}
-
-		setIsApproved(true);
 	};
+
 	const handleAfterApprove = async () => {
+		console.log("handleAfterApprove...");
 		if (!signatureParam) {
 			console.log("signatureParam is undefined");
 			return;
 		}
 		const txHash = await props.handleSendApproveHashTx(signatureParam);
+		console.log("txHash: ", txHash);
+		setTxHash(txHash);
+		setLoading(false);
 		props.setIsExecuted(true);
 		await onAcceptSessionRequest(txHash);
 	};
 
 	const handleSetProof = async (_proof: string) => {
+		console.log("handleSetProof...");
+		console.log("_proof: ", _proof);
 		setAadhaarProof(_proof);
 	};
 
 	useEffect(() => {
-		if (isApproved && signatureParam && !props.isExecuted) {
+		if (signatureParam && !props.isExecuted) {
 			handleAfterApprove();
+			setSignatureParam(undefined);
 		}
 
 		// eslint-disable-next-line react-hooks/exhaustive-deps
-	}, [props, isApproved, signatureParam]);
+	}, [props, signatureParam]);
 
 	const textTextStyle = {
 		color: props.isDarkTheme ? "white" : "black",
@@ -99,25 +133,30 @@ export const Approve = (props: ApproveProps) => {
 			{!props.isExecuted ? (
 				<Stack
 					align="center"
-					my={20}
-					p={10}
+					gap={5}
+					mt={5}
+					mb={10}
+					py={20}
 					style={{
-						height: "250px",
-						width: "500px",
+						height: "340px",
+						width: "650px",
 						boxShadow: "rgb(0 0 0 / 8%) 0rem 0.37rem 0.62rem",
-						borderRadius: "0.5rem",
+						borderRadius: "0.3rem",
 						borderColor: props.isDarkTheme ? "white" : "black",
 						borderWidth: "1px",
 						borderStyle: "solid",
+						display: "flex", // Ensures flexbox is used
+						flexDirection: "column", // Explicitly set to column just to be clear
+						justifyContent: "space-between", // Distributes space between children vertically
 					}}
 				>
-					<Text style={{ ...textTextStyle, size: "25px" }}>
+					<Text style={textTextStyle} size="20px">
 						Approve Safe Transaction
 					</Text>
 					<>
 						{props.owner && (
 							<Group
-								mb={10}
+								// mb={10}
 								gap={50}
 								style={{ justifyContent: "space-between" }}
 							>
@@ -141,14 +180,13 @@ export const Approve = (props: ApproveProps) => {
 
 					<>
 						{props.owner?.type === 2 ? (
-							<>
-								<Aadhaar
-									isDarkTheme={props.isDarkTheme}
-									address={props.owner.address}
-									safeMFAOpHash={requestContent.message}
-									handleSetProof={handleSetProof}
-								/>
-							</>
+							<Aadhaar
+								isDarkTheme={props.isDarkTheme}
+								address={props.owner.address}
+								// safeMFAOpHash={requestContent.message}
+								safeTxHash={requestContent ? requestContent.message : ""}
+								handleSetProof={handleSetProof}
+							/>
 						) : props.owner?.type === 3 ? (
 							<TextInput
 								variant="filled"
@@ -164,24 +202,77 @@ export const Approve = (props: ApproveProps) => {
 						) : null}
 					</>
 
-					<Group>
-						<Button
-							onClick={() => {
-								onRejectSessionRequest();
-							}}
-						>
-							Reject
-						</Button>
-						<Button onClick={() => handleApprove()}>Approve</Button>
-					</Group>
+					<Stack align="center">
+						<Group>
+							<Button
+								variant="light"
+								color="red"
+								onClick={() => {
+									onRejectSessionRequest();
+								}}
+							>
+								Reject
+							</Button>
+							<Button
+								variant="outline"
+								color="green"
+								loading={loading}
+								onClick={() => handleApprove()}
+							>
+								Approve
+							</Button>
+						</Group>
+						{errorMessage && (
+							<Text size={"14px"} style={{ color: "red" }}>
+								{errorMessage}
+							</Text>
+						)}
+					</Stack>
 				</Stack>
 			) : (
-				<>
-					<Text style={{ ...textTextStyle, fontSize: "25px" }}>Approved!</Text>
-					<Text style={textTextStyle}>
-						Check Safe UI and execute the transaction
+				// TODO: can show the threshold status after the transaction is executed
+				<Stack
+					align="center"
+					gap={10}
+					mt={5}
+					mb={10}
+					py={50}
+					style={{
+						height: "340px",
+						width: "650px",
+						boxShadow: "rgb(0 0 0 / 8%) 0rem 0.37rem 0.62rem",
+						borderRadius: "0.3rem",
+						borderColor: props.isDarkTheme ? "white" : "black",
+						borderWidth: "1px",
+						borderStyle: "solid",
+					}}
+				>
+					<Text mt={50} mb={20} size={"20px"} style={textTextStyle}>
+						Successfully Approved 🎉
 					</Text>
-				</>
+					<Group gap={10}>
+						<Text style={textTextStyle}>Transaction Hash: </Text>
+
+						<Anchor
+							href={"https://sepolia.etherscan.io/tx/" + txHash}
+							target="_blank"
+							rel="noreferrer"
+						>
+							{shortenAddress(txHash)}
+						</Anchor>
+					</Group>
+
+					<Anchor
+						href={
+							"https://app.safe.global/transactions/queue?safe=sep:" +
+							safe?.address
+						}
+						target="_blank"
+						rel="noreferrer"
+					>
+						Go back to Safe App
+					</Anchor>
+				</Stack>
 			)}
 		</>
 	);

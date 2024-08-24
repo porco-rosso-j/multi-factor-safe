@@ -8,8 +8,13 @@ import type { SessionTypes } from "@walletconnect/types";
 import { getSdkError } from "@walletconnect/utils";
 import { buildSession, web3WalletParams } from "../utils/walletconnect";
 import { SafeOwner, WCRequest, WCRequestContent } from "../utils/types";
+import { useUserContext } from "../contexts";
 
-export function useWalletConnect(owner: SafeOwner | undefined) {
+// export function useWalletConnect(owner: SafeOwner | undefined) {
+export function useWalletConnect() {
+	const { selectedOwner } = useUserContext();
+	const owner = selectedOwner;
+
 	const [web3wallet, setWeb3Wallet] = useState<IWeb3Wallet>();
 	const [pairingCode, setPairingCode] = useState<string>("");
 	const [session, setSession] = useState<SessionTypes.Struct>();

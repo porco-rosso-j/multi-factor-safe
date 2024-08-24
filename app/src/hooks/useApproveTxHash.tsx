@@ -27,9 +27,11 @@ export function useSendApproveTxHash() {
 	): Promise<string> {
 		let signature;
 		if (owner.type === 2) {
-			if (!("qrCode" in param)) {
-				throw new Error("QR Code is required for type 5");
+			if (!("proof" in param)) {
+				throw new Error("proof is required for type 2");
 			}
+
+			signature = param.proof;
 		} else if (owner.type === 3) {
 			if (!("password" in param)) {
 				throw new Error("Password is required for type 3");

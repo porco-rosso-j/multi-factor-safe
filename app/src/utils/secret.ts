@@ -126,3 +126,10 @@ export async function getCommitmentHash(
 	console.log("packedHash: ", packedHash);
 	return await parseUint8ArrayToBytes32(ethers.getBytes(packedHash));
 }
+
+export function getMFAOpHash(address: string, safeTxHash: string) {
+	return ethers.solidityPackedKeccak256(
+		["address", "bytes32"],
+		[address, safeTxHash]
+	);
+}

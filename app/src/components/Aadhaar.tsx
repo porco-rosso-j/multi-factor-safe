@@ -8,21 +8,28 @@ import {
 	deserialize,
 	packGroth16Proof,
 } from "@anon-aadhaar/core";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { ethers } from "ethers";
 import { Text, Stack } from "@mantine/core";
 import { TextStyle } from "../styles/styles";
+import { getCommitmentHash, getMFAOpHash } from "../utils/secret";
 
 type AadhaarProps = {
 	isDarkTheme: boolean;
 	address: string;
-	safeMFAOpHash: string;
+	safeTxHash: string;
 	handleSetProof: (proof: string) => void;
 };
 
 export const Aadhaar = (props: AadhaarProps) => {
 	const [anonAadhaar] = useAnonAadhaar();
 	const [, latestProof] = useProver();
+
+	console.log("safeTxHash: ", props.safeTxHash);
+	console.log(
+		"getMFAOpHash(props.address, props.safeTxHash): ",
+		getMFAOpHash(props.address, props.safeTxHash)
+	);
 
 	useEffect(() => {
 		// To do: fix the hook in the react lib
@@ -54,19 +61,22 @@ export const Aadhaar = (props: AadhaarProps) => {
 				]
 			);
 
+			console.log("nullifier: ", core.proof.nullifier);
+			console.log("nullifier bigint: ", BigInt(core.proof.nullifier));
+
 			props.handleSetProof(proofData);
 		});
 	}, [anonAadhaar, latestProof, props]);
 	return (
 		<>
-			<Stack align="center" gap={10}>
-				<Text style={TextStyle(props.isDarkTheme)}>
-					Click Button to login and generate proof
+			<Stack align="center">
+				<Text mb={5} size={"18px"} style={TextStyle(props.isDarkTheme)}>
+					Login and generate proof
 				</Text>
 
 				<LogInWithAnonAadhaar
 					nullifierSeed={1234}
-					signal={props.safeMFAOpHash}
+					signal={getMFAOpHash(props.address, props.safeTxHash)}
 				/>
 			</Stack>
 		</>

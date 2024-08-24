@@ -153,10 +153,10 @@ contract DeploySignerValidator is Script {
     function runAonAadhaarValidatorDeploy() external {
         vm.startBroadcast(deployerPrivateKey);
 
-        uint userDataHash = 9853173681030454506021293959134843318300866728072931709888725731941693583898;
+        uint userDataHash = 7946664694698614794431553425553810756961743235367295886353548733878558886762;
         address _anonAaadhaarValidator = 0xd1B1602f3a801A7Bb1076170aC3b65d39132ae2e;
 
-        addValidatorIfNotEnabled(_anonAaadhaarValidator);
+        // addValidatorIfNotEnabled(_anonAaadhaarValidator);
 
         address _anonAadhaarSignerAdapter = address(
             Safe7579SignatureValidatorFactory(signerAdapterFactoryAddress)
