@@ -1,4 +1,4 @@
-import { Group, Text, Button, Anchor } from "@mantine/core";
+import { Group, Text, Button, Anchor, Box } from "@mantine/core";
 import { IconSun, IconMoonFilled } from "@tabler/icons-react";
 import { imgGithub, imgGithubWhite } from "../assets/index";
 import { useNavigate, useLocation } from "react-router-dom";
@@ -100,51 +100,13 @@ export function Header(props: HeaderProps) {
 						}}
 					/>
 				)}
-				{/* <Button style={BottunStyle} onClick={() => handleRequest()}>
-					Connect
-				</Button> */}
-				<ConnectButton
-					isDarkTheme={props.isDarkTheme}
-					toggleTheme={props.toggleTheme}
-				/>
+				<Box mr={35}>
+					<ConnectButton
+						isDarkTheme={props.isDarkTheme}
+						toggleTheme={props.toggleTheme}
+					/>
+				</Box>
 			</Group>
 		</Group>
 	);
 }
-
-// import { Group, Text, Button, Anchor } from "@mantine/core";
-// import { useUserContext } from "../contexts/UserContext";
-// import imgGithub from "../../public/github-mark.png";
-
-// export function Header() {
-// 	const { removeInstances } = useUserContext();
-// 	return (
-// 		<Group py={5} mt={10} justify="space-between">
-// 			<Text
-// 				size="25px"
-// 				ml={35}
-// 				style={{ color: "black", fontFamily: "Verdana, sans-serif" }}
-// 			>
-// 				Safe MFA
-// 			</Text>
-// 			<Group mt={5}>
-// 				<Anchor
-// 					href="https://github.com/porco-rosso-j/multi-factor-safe"
-// 					target="_blank"
-// 					rel="noreferrer"
-// 					mt={8}
-// 					mr={10}
-// 				>
-// 					<img src={imgGithub} alt="github" style={{ width: 25, height: 25 }} />
-// 				</Anchor>
-// 				<Button
-// 					onClick={removeInstances}
-// 					mr={30}
-// 					style={{ backgroundColor: "gray" }}
-// 				>
-// 					Disconnect
-// 				</Button>
-// 			</Group>
-// 		</Group>
-// 	);
-// }

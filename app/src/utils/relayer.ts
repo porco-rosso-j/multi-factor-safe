@@ -1,7 +1,8 @@
 import { ethers } from "ethers";
 import Safe7579SignatureValidatorABI from "./Safe7579SignatureValidator.json";
+import { TransactionResult } from "./types";
 // jq '.abi' out/Safe7579SignatureValidator.sol/Safe7579SignatureValidator.json > app/src/utils/Safe7579SignatureValidator.json
-
+// jq '.abi' out/Safe7579SignatureValidatorFactory.sol/Safe7579SignatureValidatorFactory.json > app/src/utils/Safe7579SignatureValidatorFactory.json
 export const provider = new ethers.JsonRpcProvider(
 	import.meta.env.VITE_SEPOLIA_RPC_URL
 );
@@ -15,7 +16,7 @@ export const sendApproveHashTx = async (
 	adapterAddress: string,
 	safeTxHash: string,
 	signature: string
-): Promise<string> => {
+): Promise<TransactionResult> => {
 	const signerAdapter = new ethers.Contract(
 		adapterAddress,
 		Safe7579SignatureValidatorABI,
@@ -28,8 +29,21 @@ export const sendApproveHashTx = async (
 		signature,
 		{ gasLimit: 1000000 }
 	);
-	console.log("tx: ", tx);
-	const txReceipt = await tx.wait();
-	console.log("txReceipt: ", txReceipt);
-	return txReceipt.transactionHash;
+
+	try {
+		console.log("tx: ", tx);
+		const txReceipt = await tx.wait();
+		console.log("txReceipt: ", txReceipt);
+		return {
+			txHash: txReceipt.hash,
+			success: true,
+		};
+	} catch (e) {
+		console.error("Error sending transaction", e);
+		return {
+			txHash: tx.hash,
+			success: false,
+			erorrMessage: "Error sending transaction",
+		};
+	}
 };

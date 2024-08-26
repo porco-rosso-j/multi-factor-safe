@@ -42,3 +42,9 @@ export type PrivateEOAParams = {
 export type AnonAadhaarParams = {
 	proof: string;
 };
+
+export type TransactionResult = {
+	txHash: string;
+	success: boolean;
+	erorrMessage?: string;
+};

@@ -106,8 +106,10 @@ contract DeploySignerValidator is Script {
     function runPasswordValidatorDeploy() external {
         vm.startBroadcast(deployerPrivateKey);
 
-        bytes32 passwordHash = 0x032e60c0d43ea621d6f898a9596f7ca72cb6c127493094d691c032b66fa1f056;
         address _passwordValidator = 0xAc1c9DAac25f4BB101437903E3EB4Be8031d1EBd;
+        addValidatorIfNotEnabled(_passwordValidator);
+
+        bytes32 passwordHash = 0x032e60c0d43ea621d6f898a9596f7ca72cb6c127493094d691c032b66fa1f056;
 
         address _passwordSignerAdapter = address(
             signerAdapterFactory.createSafe7579SignatureValidator(
@@ -174,8 +176,12 @@ contract DeploySignerValidator is Script {
     }
 
     function addValidatorIfNotEnabled(address _validator) public {
-        if (!signerAdapterFactory.getIsValidatorEnabled(_validator)) {
-            signerAdapterFactory.addValidator(_validator);
+        if (
+            !Safe7579SignatureValidatorFactory(signerAdapterFactoryAddress)
+                .getIsValidatorEnabled(_validator)
+        ) {
+            Safe7579SignatureValidatorFactory(signerAdapterFactoryAddress)
+                .addValidator(_validator);
         }
     }
 }

@@ -5,10 +5,11 @@ import PasswordCircuit from "../circuits/password.json";
 import PrivateEoACircuit from "../circuits/k256.json";
 import {
 	getCommitmentHash,
+	getPasswordHash,
 	getSaltForPasswordCiruict,
-	getSecretBytesAndHashFromSecret,
+	getSecretBytes,
 } from "../utils/secret";
-import { SafeOwner, SignatureParam } from "../utils/types";
+import { SafeOwner, SignatureParam, TransactionResult } from "../utils/types";
 import { sendApproveHashTx } from "../utils/relayer";
 import { Signer, ethers } from "ethers";
 import {
@@ -24,7 +25,7 @@ export function useSendApproveTxHash() {
 		safeTxHash: string,
 		owner: SafeOwner,
 		param: SignatureParam
-	): Promise<string> {
+	): Promise<TransactionResult> {
 		let signature;
 		if (owner.type === 2) {
 			if (!("proof" in param)) {
@@ -42,6 +43,7 @@ export function useSendApproveTxHash() {
 				owner.address
 			);
 		} else if (owner.type === 4) {
+			// TODO: can check if this signer is correct comparing hash with the one stored on contract
 			if (!("privateSigner" in param)) {
 				throw new Error("Signer is required for type 4");
 			}
@@ -51,43 +53,30 @@ export function useSendApproveTxHash() {
 				owner.address
 			);
 		} else {
-			return "";
+			return { txHash: "", success: false };
 		}
 
 		if (!signature) {
-			return "";
+			return {
+				txHash: "",
+				success: false,
+				erorrMessage: "Error generating signature",
+			};
 		}
 
-		const txHash = await sendApproveHashTx(
+		const txResult = await sendApproveHashTx(
 			safeAddress,
 			owner.address,
 			safeTxHash,
 			signature
 		);
-		return txHash;
+		return txResult;
 	}
 
 	return {
 		sendApproveTxHash,
 	};
 }
-
-export const getAadhaarSignature = async (
-	qrData: string,
-	safeTxHash: string,
-	signerAdapterAddress: string
-): Promise<string | undefined> => {
-	try {
-		// signal
-		const safeMFAOpHash = await getSafeMFAOpHash(
-			signerAdapterAddress,
-			safeTxHash
-		);
-		return "";
-	} catch (error) {
-		console.error("Error signing message", error);
-	}
-};
 
 export const getPasswordSignature = async (
 	password: string,
@@ -101,11 +90,9 @@ export const getPasswordSignature = async (
 
 		const salt = await getSaltForPasswordCiruict();
 
-		const { secretBytes, secretHash } = await getSecretBytesAndHashFromSecret(
-			//secret
-			password,
-			salt
-		);
+		const secretBytes = await getSecretBytes(password);
+		const passwordHash = await getPasswordHash(signerAdapterAddress);
+		console.log("passwordHash: ", passwordHash);
 
 		const commitmentHash = await getCommitmentHash(
 			signerAdapterAddress as string,
@@ -114,7 +101,7 @@ export const getPasswordSignature = async (
 
 		const input = {
 			preimage: secretBytes,
-			password_hash: secretHash,
+			password_hash: passwordHash,
 			salt: salt,
 			commitment_hash: commitmentHash,
 		};

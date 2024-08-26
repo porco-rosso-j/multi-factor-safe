@@ -34,7 +34,6 @@ export const MainBoxStyle = (isDarkTheme: boolean) => {
 
 export const BottunStyle = (isDarkTheme: boolean) => {
 	return {
-		marginRight: "35px",
 		color: isDarkTheme ? "black" : "white",
 		backgroundColor: isDarkTheme ? "white" : "black",
 	};

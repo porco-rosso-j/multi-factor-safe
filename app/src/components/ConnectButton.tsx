@@ -7,10 +7,9 @@ import {
 	useDisconnect,
 } from "@web3modal/ethers/react";
 import { BottunStyle } from "../styles/styles";
-import { getSigner, supportedChainID, switchNetwork } from "../utils/login";
+import { getSigner } from "../utils/login";
 import { useUserContext } from "../contexts";
 import { useEffect } from "react";
-import { W3mFrameProvider } from "@web3modal/wallet";
 import { EthereumProvider } from "@walletconnect/ethereum-provider";
 
 type ConnectButtonProps = {
@@ -39,15 +38,6 @@ export function ConnectButton(props: ConnectButtonProps) {
 	useEffect(() => {
 		console.log("useEffect for recoverSigner... ");
 		const recoverSigner = async () => {
-			// if (safe) {
-			// 	if (safe.address !== address) {
-			// 		console.log("signer should be the same as safe. disconnecting...");
-			// 		disconnect();
-			// 	}
-			// } else {
-			// 	saveSigner(await getSigner(walletProvider));
-			// }
-
 			saveSigner(await getSigner(walletProvider));
 		};
 

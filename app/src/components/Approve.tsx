@@ -4,21 +4,22 @@ import {
 	Stack,
 	Button,
 	TextInput,
-	Box,
 	Anchor,
+	Box,
 } from "@mantine/core";
 import { useEffect, useState } from "react";
-
-import WalletConnect from "../assets/walletconnect.svg";
-import { shortenAddress } from "../utils/shortenAddr";
-import { SafeOwner, SignatureParam, WCRequest } from "../utils/types";
+import { shortenAddress, shortenTxHash } from "../utils/shortenAddr";
+import {
+	SafeOwner,
+	SignatureParam,
+	TransactionResult,
+	WCRequest,
+} from "../utils/types";
 import { signerType } from "../utils/constants";
-import { Signer } from "ethers";
 import { useUserContext } from "../contexts";
 import { Aadhaar } from "./Aadhaar";
-import { IWeb3Wallet } from "@walletconnect/web3wallet";
 import { useWalletConnect } from "../hooks/useWalletConnect";
-import { error } from "console";
+import { ConnectButton } from "./ConnectButton";
 
 type ApproveProps = {
 	isDarkTheme: boolean;
@@ -26,7 +27,9 @@ type ApproveProps = {
 	wcRequest: WCRequest;
 	isExecuted: boolean;
 	setIsExecuted: (value: boolean) => void;
-	handleSendApproveHashTx: (param: SignatureParam) => Promise<string>;
+	handleSendApproveHashTx: (
+		param: SignatureParam
+	) => Promise<TransactionResult>;
 };
 
 export const Approve = (props: ApproveProps) => {
@@ -60,11 +63,15 @@ export const Approve = (props: ApproveProps) => {
 	const handleApprove = async () => {
 		console.log("handleApprove...");
 		setErrorMessage("");
+		setTxHash("");
 		setLoading(true);
+
+		console.log("props.owner: ", props.owner);
 
 		if (props.owner?.type === 2) {
 			if (!aadhaarProof) {
 				setErrorMessage("Generate Aadhaar Proof");
+				setLoading(false);
 				return;
 			}
 			setSignatureParam({
@@ -73,14 +80,16 @@ export const Approve = (props: ApproveProps) => {
 		} else if (props.owner?.type === 3) {
 			if (!password) {
 				setErrorMessage("Enter password");
+				setLoading(false);
 				return;
 			}
 			setSignatureParam({
 				password: password,
 			});
-		} else if (props.owner?.type === 4 && signer) {
+		} else if (props.owner?.type === 4) {
 			if (!signer) {
 				setErrorMessage("Signer Not Connected");
+				setLoading(false);
 				return;
 			}
 			setSignatureParam({
@@ -89,6 +98,7 @@ export const Approve = (props: ApproveProps) => {
 		} else {
 			console.log("signatureParam is undefined");
 			setErrorMessage("Type Not Supported");
+			setLoading(false);
 		}
 	};
 
@@ -98,12 +108,20 @@ export const Approve = (props: ApproveProps) => {
 			console.log("signatureParam is undefined");
 			return;
 		}
-		const txHash = await props.handleSendApproveHashTx(signatureParam);
+		const txResult = await props.handleSendApproveHashTx(signatureParam);
 		console.log("txHash: ", txHash);
-		setTxHash(txHash);
+		if (txResult.success) {
+			props.setIsExecuted(true);
+			await onAcceptSessionRequest(txResult.txHash);
+		} else {
+			setErrorMessage(
+				txResult.erorrMessage
+					? txResult.erorrMessage
+					: "Error sending transaction: "
+			);
+		}
+		setTxHash(txResult.txHash);
 		setLoading(false);
-		props.setIsExecuted(true);
-		await onAcceptSessionRequest(txHash);
 	};
 
 	const handleSetProof = async (_proof: string) => {
@@ -125,11 +143,8 @@ export const Approve = (props: ApproveProps) => {
 		color: props.isDarkTheme ? "white" : "black",
 		TextAlign: "center",
 	};
-	{
-		/* <img src={WalletConnect} alt="delivery" height={50} width={50} /> */
-	}
 	return (
-		<>
+		<Box style={{ justifyContent: "center", alignItems: "center" }} mt={10}>
 			{!props.isExecuted ? (
 				<Stack
 					align="center"
@@ -167,7 +182,8 @@ export const Approve = (props: ApproveProps) => {
 								<Stack style={{ alignItems: "flex-end" }} gap={3}>
 									<Text style={textTextStyle}>
 										{shortenAddress(
-											requestContent ? requestContent.message : ""
+											// requestContent ? requestContent.message : ""
+											"0x0000000000000000000000000000000000000000000000000000000000000032"
 										)}
 									</Text>
 									<Text style={textTextStyle}>
@@ -183,22 +199,43 @@ export const Approve = (props: ApproveProps) => {
 							<Aadhaar
 								isDarkTheme={props.isDarkTheme}
 								address={props.owner.address}
-								// safeMFAOpHash={requestContent.message}
-								safeTxHash={requestContent ? requestContent.message : ""}
+								// safeTxHash={requestContent ? requestContent.message : ""}
+								safeTxHash={
+									"0x0000000000000000000000000000000000000000000000000000000000000032"
+								}
 								handleSetProof={handleSetProof}
 							/>
 						) : props.owner?.type === 3 ? (
 							<TextInput
 								variant="filled"
 								radius="sm"
-								label="Password"
-								style={{ width: "80%" }}
-								width="150px"
-								placeholder="testpassword"
+								label={
+									<Text
+										style={{
+											...textTextStyle,
+											fontSize: "12px",
+											opacity: "50%",
+										}}
+									>
+										{" "}
+										Password{" "}
+									</Text>
+								}
+								style={{ width: "50%", backgroundColor: "transparent" }}
+								placeholder="satoshi20090103"
 								onChange={(e) => setPassword(e.target.value)}
 							/>
 						) : props.owner?.type === 4 ? (
-							<Text style={textTextStyle}> Connect Private Signer Wallet</Text>
+							<Stack align="center">
+								<Text style={textTextStyle}>
+									{" "}
+									Connect an EOA wallet you designated as private owner
+								</Text>
+								<ConnectButton
+									isDarkTheme={props.isDarkTheme}
+									toggleTheme={() => ({})}
+								/>
+							</Stack>
 						) : null}
 					</>
 
@@ -223,8 +260,23 @@ export const Approve = (props: ApproveProps) => {
 							</Button>
 						</Group>
 						{errorMessage && (
-							<Text size={"14px"} style={{ color: "red" }}>
-								{errorMessage}
+							<Text size={"14px"} style={{ color: "red", textAlign: "center" }}>
+								{errorMessage}{" "}
+								{txHash && (
+									<Anchor
+										href={"https://sepolia.etherscan.io/tx/" + txHash}
+										target="_blank"
+										rel="noreferrer"
+										underline="always"
+										ml={1}
+										style={{
+											fontSize: "14px",
+											color: "red",
+										}}
+									>
+										{shortenTxHash(txHash)}
+									</Anchor>
+								)}
 							</Text>
 						)}
 					</Stack>
@@ -257,8 +309,9 @@ export const Approve = (props: ApproveProps) => {
 							href={"https://sepolia.etherscan.io/tx/" + txHash}
 							target="_blank"
 							rel="noreferrer"
+							underline="always"
 						>
-							{shortenAddress(txHash)}
+							{txHash ? shortenTxHash(txHash) : ""}
 						</Anchor>
 					</Group>
 
@@ -274,6 +327,6 @@ export const Approve = (props: ApproveProps) => {
 					</Anchor>
 				</Stack>
 			)}
-		</>
+		</Box>
 	);
 };

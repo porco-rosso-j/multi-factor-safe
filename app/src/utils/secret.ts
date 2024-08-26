@@ -1,17 +1,42 @@
 import { ethers } from "ethers";
-import { Barretenberg, Fr } from "@aztec/bb.js";
 import { parseUint8ArrayToBytes32 } from "./parser";
+import { provider } from "./relayer";
 import { pedersenHash } from "./pedersen";
 
-type SecretBytesAndHash = {
-	secretBytes: string[];
-	secretHash: string;
-};
+export async function getPasswordHash(owner: string): Promise<string> {
+	const passwordValidatorInterface = new ethers.Interface([
+		`function accountToPasswordHash(address account) view returns (bytes32)`,
+	]);
 
-export async function getSecretBytesAndHashFromSecret(
-	_secret: string,
-	salt: string[]
-): Promise<SecretBytesAndHash> {
+	let passwordHash = "";
+	try {
+		passwordHash = passwordValidatorInterface.decodeFunctionResult(
+			"accountToPasswordHash",
+			await provider.call({
+				to: "0xAc1c9DAac25f4BB101437903E3EB4Be8031d1EBd",
+				data: passwordValidatorInterface.encodeFunctionData(
+					"accountToPasswordHash",
+					[owner]
+					// ["0xE1dedAd3f3Ac2B0C578e87fC57d4861D8102Cc9e"]
+				),
+			})
+		)[0];
+		console.log("passwordHash: ", passwordHash);
+	} catch (err) {
+		console.log("err: ", err);
+	}
+	return passwordHash;
+}
+
+export async function getSecretBytes(_secret: string): Promise<string[]> {
+	const PaddedSecretBytes = await getPaddedSecretBytes(_secret);
+	console.log("PaddedSecretBytes: ", PaddedSecretBytes);
+	return PaddedSecretBytes;
+}
+
+export async function computePasswordHash(_secret: string): Promise<string> {
+	const salt = await getSaltForPasswordCiruict();
+
 	const PaddedSecretBytes = await getPaddedSecretBytes(_secret);
 	console.log("PaddedSecretBytes: ", PaddedSecretBytes);
 
@@ -20,10 +45,7 @@ export async function getSecretBytesAndHashFromSecret(
 
 	const hash = await pedersenHash([_hash, ...salt]);
 	console.log("hash: ", hash);
-	return {
-		secretBytes: PaddedSecretBytes,
-		secretHash: hash,
-	};
+	return hash;
 }
 
 export async function getPaddedSecretBytes(_secret: string): Promise<string[]> {
@@ -40,73 +62,6 @@ export async function getPaddedSecretBytes(_secret: string): Promise<string[]> {
 	}
 	return secretBytes32Array;
 }
-
-// export async function getPaddedSecretBytes(_secret: string): Promise<bigint[]> {
-// 	const textEncoder = new TextEncoder();
-// 	const secretBytes = textEncoder.encode(_secret);
-// 	console.log("secretBytes: ", secretBytes);
-
-// 	let secretBytesBigInt: bigint[] = Array.from(secretBytes, (byte) =>
-// 		BigInt(byte)
-// 	);
-
-// 	const expectedLength = 10;
-
-// 	if (secretBytesBigInt.length < expectedLength) {
-// 		// Calculate how many zeros to add
-// 		const zerosToAdd = Array.from(
-// 			{ length: expectedLength - secretBytesBigInt.length },
-// 			() => 0n
-// 		);
-
-// 		// Concatenate the current array with the new zeros array
-// 		secretBytesBigInt = secretBytesBigInt.concat(zerosToAdd);
-// 	}
-
-// 	return secretBytesBigInt;
-// }
-
-// hex string -> uint8 -> bytes32 array
-
-// export async function parseUint8ArrayToStrArray(
-// 	value: Uint8Array
-// ): Promise<string[]> {
-// 	const array: string[] = [];
-// 	for (let i = 0; i < value.length; i++) {
-// 		array[i] = value[i].toString();
-// 	}
-// 	return array;
-// }
-
-// export async function parseUint8ArrayToBytes32(
-// 	value: Uint8Array
-// ): Promise<string[]> {
-// 	const array: string[] = [];
-
-// 	console.log("value: ", value);
-// 	for (let i = 0; i < value.length; i++) {
-// 		const element = `0x${value[i].toString(16).padStart(2, "0")}`;
-// 		array[i] = ethers.zeroPadValue(element, 32);
-// 	}
-// 	console.log("array: ", array);
-// 	return array;
-// }
-
-// export async function pedersenHash(inputs: string[]): Promise<string> {
-// 	const bb: Barretenberg = await Barretenberg.new();
-// 	console.log("inputs: ", inputs);
-// 	const inputArray: Fr[] = inputs.map((str) => Fr.fromString(str));
-// 	console.log("inputArray Fr: ", inputArray);
-// 	return (await bb.pedersenHash(inputArray, 0)).toString();
-// }
-
-// export async function pedersenHash(inputs: bigint[]): Promise<string> {
-// 	const bb: Barretenberg = await Barretenberg.new();
-// 	console.log("inputs: ", inputs);
-// 	const inputArray: Fr[] = inputs.map((value) => new Fr(value));
-// 	console.log("inputArray Fr: ", inputArray);
-// 	return (await bb.pedersenHash(inputArray, 0)).toString();
-// }
 
 export async function getSaltForPasswordCiruict(): Promise<string[]> {
 	const _salt = ethers.getBytes(ethers.solidityPacked(["uint256"], [11155111]));
