@@ -1,4 +1,4 @@
-import { Group, Text, Button, Anchor, Box } from "@mantine/core";
+import { Group, Text, Anchor, Box } from "@mantine/core";
 import { IconSun, IconMoonFilled } from "@tabler/icons-react";
 import { imgGithub, imgGithubWhite } from "../assets/index";
 import { useNavigate, useLocation } from "react-router-dom";

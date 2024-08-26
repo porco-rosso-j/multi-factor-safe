@@ -1,7 +1,7 @@
 import { ethers } from "ethers";
 import { parseUint8ArrayToBytes32 } from "./parser";
 import { provider } from "./relayer";
-import { pedersenHash } from "./pedersen";
+import { pedersenHash } from "./noir/pedersen";
 
 export async function getPasswordHash(owner: string): Promise<string> {
 	const passwordValidatorInterface = new ethers.Interface([

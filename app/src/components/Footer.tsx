@@ -1,4 +1,4 @@
-import { Group, Text, Anchor } from "@mantine/core";
+import { Group, Text } from "@mantine/core";
 
 type FooterProps = {
 	isDarkTheme: boolean;

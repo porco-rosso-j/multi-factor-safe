@@ -8,26 +8,23 @@ import {
 	Button,
 	Anchor,
 } from "@mantine/core";
-import { useUserContext } from "../contexts";
-import { BottunStyle, MainBoxStyle } from "../styles/styles";
-import { shortenAddress } from "../utils/shortenAddr";
-import { signerType } from "../utils/constants";
 import { IconSettings } from "@tabler/icons-react";
-import WalletConnect from "../assets/walletconnect.svg";
-import { getSignerType } from "../utils/validator";
-import { WCConnect } from "../components/modals/WCConnect";
-import {
-	SafeOwner,
-	SignatureParam,
-	TransactionResult,
-	WCRequest,
-} from "../utils/types";
-import { useSendApproveTxHash } from "../hooks/useApproveTxHash";
-import { CopyButtonIcon } from "../components";
-import { Approve } from "../components/Approve";
-import { useWalletConnect } from "../hooks/useWalletConnect";
 import { getSdkError } from "@walletconnect/utils";
-import { AddSigner } from "../components/AddSigner";
+
+import { WCConnect, CopyButtonIcon, Approve, AddSigner } from "../components";
+import { useSendApproveTxHash, useWalletConnect } from "../hooks";
+import { useUserContext } from "../contexts";
+import { BottunStyle, MainBoxStyle, TextStyle } from "../styles/styles";
+import WalletConnect from "../assets/walletconnect.svg";
+import {
+	shortenAddress,
+	signerType,
+	getSignerType,
+	type SafeOwner,
+	type SignatureParam,
+	type TransactionResult,
+	type WCRequest,
+} from "../utils";
 
 type SafeSignerPageProps = {
 	isDarkTheme: boolean;
@@ -35,13 +32,13 @@ type SafeSignerPageProps = {
 
 export function SafeSigner(props: SafeSignerPageProps) {
 	const { sendApproveTxHash } = useSendApproveTxHash();
-	const { signer, safe, selectedOwner, saveSelectedOwner } = useUserContext();
+	const { safe, selectedOwner, saveSelectedOwner } = useUserContext();
 	const [owners, setOwners] = useState<SafeOwner[]>([]);
 
 	const [wcConnectOpened, setWCConnectOpened] = useState(false);
 	const [isApprovalRequested, setIsApprovalRequested] = useState(false);
 	const [isExecuted, setIsExecuted] = useState(false);
-	const [isAddSigner, setIsAddSigner] = useState(true);
+	const [isAddSigner, setIsAddSigner] = useState(false);
 
 	const {
 		web3wallet,
@@ -127,16 +124,12 @@ export function SafeSigner(props: SafeSignerPageProps) {
 		);
 	};
 
-	const textTextStyle = {
-		color: props.isDarkTheme ? "white" : "black",
-		TextAlign: "center",
-	};
 	return (
 		<>
 			<Box style={MainBoxStyle(props.isDarkTheme)}>
 				{!isWCConnected ? (
 					<>
-						<Text style={textTextStyle} size="25px">
+						<Text style={TextStyle(props.isDarkTheme)} size="25px">
 							{isAddSigner ? "Create New Signer" : "Signers"}
 						</Text>
 						{isAddSigner ? (
@@ -156,9 +149,9 @@ export function SafeSigner(props: SafeSignerPageProps) {
 									mt={15}
 									w="45%"
 								>
-									<Text style={textTextStyle}> Id</Text>
-									<Text style={textTextStyle}> address </Text>
-									<Text style={textTextStyle}> method </Text>
+									<Text style={TextStyle(props.isDarkTheme)}> Id</Text>
+									<Text style={TextStyle(props.isDarkTheme)}> address </Text>
+									<Text style={TextStyle(props.isDarkTheme)}> method </Text>
 								</Group>
 								<Divider
 									opacity={0.5}
@@ -285,19 +278,19 @@ export function SafeSigner(props: SafeSignerPageProps) {
 					<>
 						<Stack gap={2} align="left" ml={5}>
 							<Group mb={10}>
-								<Text style={textTextStyle} size="25px">
+								<Text style={TextStyle(props.isDarkTheme)} size="25px">
 									Connected Signer:{" "}
 								</Text>
-								<Text mr={-5} style={textTextStyle} size="25px">
+								<Text mr={-5} style={TextStyle(props.isDarkTheme)} size="25px">
 									{selectedOwner ? shortenAddress(selectedOwner.address) : ""}
 								</Text>
 								<CopyButtonIcon address={safe ? safe.address : ""} />
 							</Group>
 							<Group>
-								<Text mr={-5} style={textTextStyle} size="md">
+								<Text mr={-5} style={TextStyle(props.isDarkTheme)} size="md">
 									Signer Type:{" "}
 								</Text>
-								<Text style={textTextStyle} size="md">
+								<Text style={TextStyle(props.isDarkTheme)} size="md">
 									{selectedOwner ? signerType[selectedOwner.type] : ""}
 								</Text>
 							</Group>
@@ -319,7 +312,10 @@ export function SafeSigner(props: SafeSignerPageProps) {
 									<>
 										<Text
 											my={10}
-											style={{ ...textTextStyle, textAlign: "center" }}
+											style={{
+												...TextStyle(props.isDarkTheme),
+												textAlign: "center",
+											}}
 										>
 											Initiate transaction in
 											<Anchor

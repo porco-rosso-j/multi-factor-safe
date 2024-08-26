@@ -1,5 +1,5 @@
 import React, { useState, ChangeEvent } from "react";
-import { Group, Button, Text, InputWrapper, Stack } from "@mantine/core";
+import { Button, Text, Stack } from "@mantine/core";
 import { TextStyle } from "../styles/styles";
 
 type FileInputProps = {

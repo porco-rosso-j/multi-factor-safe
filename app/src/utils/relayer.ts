@@ -1,5 +1,5 @@
 import { ethers } from "ethers";
-import Safe7579SignatureValidatorABI from "./Safe7579SignatureValidator.json";
+import { Safe7579SignatureValidatorAbi } from "./index";
 import { TransactionResult } from "./types";
 // jq '.abi' out/Safe7579SignatureValidator.sol/Safe7579SignatureValidator.json > app/src/utils/Safe7579SignatureValidator.json
 // jq '.abi' out/Safe7579SignatureValidatorFactory.sol/Safe7579SignatureValidatorFactory.json > app/src/utils/Safe7579SignatureValidatorFactory.json
@@ -19,7 +19,7 @@ export const sendApproveHashTx = async (
 ): Promise<TransactionResult> => {
 	const signerAdapter = new ethers.Contract(
 		adapterAddress,
-		Safe7579SignatureValidatorABI,
+		Safe7579SignatureValidatorAbi,
 		wallet
 	);
 

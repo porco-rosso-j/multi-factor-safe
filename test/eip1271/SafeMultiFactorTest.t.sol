@@ -12,6 +12,7 @@
 // import {UltraVerifier as PasswordVerifier} from "../../src/validators/password/plonk_vk.sol";
 // import {PasswordValidator} from "../../src/validators/password/PasswordValidator.sol";
 // import {Safe7579SignatureValidator} from "../../src/Safe7579SignatureValidator.sol";
+// import {Safe7579SignatureValidatorFactory} from "../../src/Safe7579SignatureValidatorFactory.sol";
 
 // // 1. deploy erc7579 validator
 // // 2. deploy adapter signer

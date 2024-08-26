@@ -1,12 +1,11 @@
 /* eslint-disable react-hooks/exhaustive-deps */
 import { useEffect } from "react";
 import { Box, Text, Group, Stack } from "@mantine/core";
+import { IconReload } from "@tabler/icons-react";
+import { CopyButtonIcon } from "../components";
+import { shortenAddress, getSafe } from "../utils";
 import { useUserContext } from "../contexts";
 import { AccountBoxStyle } from "../styles/styles";
-import { CopyButtonIcon } from "../components";
-import { shortenAddress } from "../utils/shortenAddr";
-import { getSafe } from "../utils/safe";
-import { IconReload } from "@tabler/icons-react";
 
 type AccountPageProps = {
 	isDarkTheme: boolean;

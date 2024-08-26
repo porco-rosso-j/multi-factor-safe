@@ -6,11 +6,14 @@ import {
 } from "@walletconnect/web3wallet";
 import type { SessionTypes } from "@walletconnect/types";
 import { getSdkError } from "@walletconnect/utils";
-import { buildSession, web3WalletParams } from "../utils/walletconnect";
-import { SafeOwner, WCRequest, WCRequestContent } from "../utils/types";
+import {
+	buildSession,
+	web3WalletParams,
+	type WCRequest,
+	type WCRequestContent,
+} from "../utils";
 import { useUserContext } from "../contexts";
 
-// export function useWalletConnect(owner: SafeOwner | undefined) {
 export function useWalletConnect() {
 	const { selectedOwner } = useUserContext();
 	const owner = selectedOwner;

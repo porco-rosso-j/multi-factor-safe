@@ -10,18 +10,23 @@ import {
 	TextInput,
 	Anchor,
 } from "@mantine/core";
+import { verifySignature } from "@anon-aadhaar/react";
+import { ethers } from "ethers";
 import { useUserContext } from "../contexts";
 import { TextStyle } from "../styles/styles";
 import { CopyButtonIcon } from "../components";
-import { shortenAddress, shortenTxHash } from "../utils/shortenAddr";
 import { FileInput } from "./FileInput";
-import { AadhaarQRValidation, uploadQRpng } from "../utils/qrUpload";
-import { verifySignature } from "@anon-aadhaar/react";
-import { copmuteUserNullifier } from "../utils/computeUserDataHash";
-import { ethers } from "ethers";
-import { computePasswordHash } from "../utils/secret";
-import { getPrivateOwnerHash } from "../utils/k256";
-import { deploySignerValidator } from "../utils/validator";
+import {
+	shortenAddress,
+	shortenTxHash,
+	AadhaarQRValidation,
+	uploadQRpng,
+	copmuteUserNullifier,
+	computePasswordHash,
+	getPrivateOwnerHash,
+	deploySignerValidator,
+} from "../utils";
+
 import { useDebouncedValue } from "@mantine/hooks";
 
 type AddSignerPageProps = {

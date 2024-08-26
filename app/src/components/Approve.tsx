@@ -8,18 +8,18 @@ import {
 	Box,
 } from "@mantine/core";
 import { useEffect, useState } from "react";
-import { shortenAddress, shortenTxHash } from "../utils/shortenAddr";
 import {
-	SafeOwner,
-	SignatureParam,
-	TransactionResult,
-	WCRequest,
-} from "../utils/types";
-import { signerType } from "../utils/constants";
+	type SafeOwner,
+	type SignatureParam,
+	type TransactionResult,
+	type WCRequest,
+	shortenAddress,
+	shortenTxHash,
+	signerType,
+} from "../utils";
+import { ConnectButton, Aadhaar } from "../components";
 import { useUserContext } from "../contexts";
-import { Aadhaar } from "./Aadhaar";
 import { useWalletConnect } from "../hooks/useWalletConnect";
-import { ConnectButton } from "./ConnectButton";
 
 type ApproveProps = {
 	isDarkTheme: boolean;

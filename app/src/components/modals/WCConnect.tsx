@@ -1,9 +1,7 @@
+import { useEffect, useState } from "react";
 import { Text, Group, Stack, Button, Modal, TextInput } from "@mantine/core";
 import WalletConnect from "../../assets/walletconnect.svg";
-import { shortenAddress } from "../../utils/shortenAddr";
-import { SafeOwner } from "../../utils/types";
-import { signerType } from "../../utils/constants";
-import { useEffect, useState } from "react";
+import { type SafeOwner, signerType, shortenAddress } from "../../utils";
 
 type WCConnectProps = {
 	isDarkTheme: boolean;

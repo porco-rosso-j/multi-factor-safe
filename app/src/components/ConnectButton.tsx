@@ -6,11 +6,11 @@ import {
 	useWeb3Modal,
 	useDisconnect,
 } from "@web3modal/ethers/react";
-import { BottunStyle } from "../styles/styles";
-import { getSigner } from "../utils/login";
-import { useUserContext } from "../contexts";
 import { useEffect } from "react";
 import { EthereumProvider } from "@walletconnect/ethereum-provider";
+import { BottunStyle } from "../styles/styles";
+import { getSigner } from "../utils";
+import { useUserContext } from "../contexts";
 
 type ConnectButtonProps = {
 	isDarkTheme: boolean;

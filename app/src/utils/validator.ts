@@ -1,6 +1,14 @@
 import { Signer, ethers } from "ethers";
 import { provider } from "./relayer";
-import Safe7579SignatureValidatorFactoryAbi from "./Safe7579SignatureValidatorFactory.json";
+import { Safe7579SignatureValidatorFactoryAbi } from "./index";
+
+export const signerType = [
+	"EOA",
+	"Unknown",
+	"Aadhaar",
+	"Password",
+	"Private EOA",
+];
 
 const validatorMap = new Map<string, number>([
 	["0x0000000000000000000000000000000000000000", 0],

@@ -8,11 +8,11 @@ import {
 	deserialize,
 	packGroth16Proof,
 } from "@anon-aadhaar/core";
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
 import { ethers } from "ethers";
 import { Text, Stack } from "@mantine/core";
 import { TextStyle } from "../styles/styles";
-import { getCommitmentHash, getMFAOpHash } from "../utils/secret";
+import { getMFAOpHash } from "../utils";
 
 type AadhaarProps = {
 	isDarkTheme: boolean;
@@ -22,6 +22,7 @@ type AadhaarProps = {
 };
 
 export const Aadhaar = (props: AadhaarProps) => {
+	const nullifierSeed = 1234;
 	const [anonAadhaar] = useAnonAadhaar();
 	const [, latestProof] = useProver();
 
@@ -49,7 +50,7 @@ export const Aadhaar = (props: AadhaarProps) => {
 			const proofData = encoder.encode(
 				["uint", "uint", "uint[4]", "uint[8]"],
 				[
-					BigInt(1234),
+					BigInt(nullifierSeed),
 					Number(core.proof.timestamp),
 					[
 						core.proof.ageAbove18,
@@ -75,7 +76,7 @@ export const Aadhaar = (props: AadhaarProps) => {
 				</Text>
 
 				<LogInWithAnonAadhaar
-					nullifierSeed={1234}
+					nullifierSeed={nullifierSeed}
 					signal={getMFAOpHash(props.address, props.safeTxHash)}
 				/>
 			</Stack>

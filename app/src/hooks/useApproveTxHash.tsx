@@ -1,23 +1,20 @@
-import { BarretenbergBackend } from "@noir-lang/backend_barretenberg";
-import { Noir } from "@noir-lang/noir_js";
-import { CompiledCircuit } from "@noir-lang/types";
-import PasswordCircuit from "../circuits/password.json";
-import PrivateEoACircuit from "../circuits/k256.json";
+import { Signer, ethers } from "ethers";
 import {
+	type SafeOwner,
+	type SignatureParam,
+	type TransactionResult,
 	getCommitmentHash,
 	getPasswordHash,
 	getSaltForPasswordCiruict,
 	getSecretBytes,
-} from "../utils/secret";
-import { SafeOwner, SignatureParam, TransactionResult } from "../utils/types";
-import { sendApproveHashTx } from "../utils/relayer";
-import { Signer, ethers } from "ethers";
-import {
+	sendApproveHashTx,
 	getPrivateOwnerHash,
 	getSafeMFAOpHash,
 	recoverPubKey,
-} from "../utils/k256";
-import { parseHexToStrArray } from "../utils/parser";
+	parseHexToStrArray,
+	privateEoACircuit,
+	passwordCircuit,
+} from "../utils";
 
 export function useSendApproveTxHash() {
 	async function sendApproveTxHash(
@@ -84,9 +81,9 @@ export const getPasswordSignature = async (
 	signerAdapterAddress: string
 ): Promise<string | undefined> => {
 	try {
-		const passwordCircuit = PasswordCircuit as CompiledCircuit;
-		const backend = new BarretenbergBackend(passwordCircuit);
-		const noir = new Noir(passwordCircuit);
+		// const passwordCircuit = PasswordCircuit as CompiledCircuit;
+		// const backend = new BarretenbergBackend(passwordCircuit);
+		// const noir = new Noir(passwordCircuit);
 
 		const salt = await getSaltForPasswordCiruict();
 
@@ -106,8 +103,8 @@ export const getPasswordSignature = async (
 			commitment_hash: commitmentHash,
 		};
 
-		const { witness } = await noir.execute(input);
-		const proof = await backend.generateProof(witness);
+		// const { witness } = await passwordCircuit.execute(input);
+		const proof = await passwordCircuit.generateProof(input);
 		console.log("proof: ", proof.proof);
 		console.log("public inputs: ", proof.publicInputs);
 		const proofStr =
@@ -129,9 +126,9 @@ export const getPrivateEOASignature = async (
 ): Promise<string | undefined> => {
 	console.log("safeTxHash in getPrivateEOASignature: ", safeTxHash);
 	try {
-		const privateEoACircuit = PrivateEoACircuit as CompiledCircuit;
-		const backend = new BarretenbergBackend(privateEoACircuit);
-		const noir = new Noir(privateEoACircuit, backend);
+		// const privateEoACircuit = PrivateEoACircuit as CompiledCircuit;
+		// const backend = new BarretenbergBackend(privateEoACircuit);
+		// const noir = new Noir(privateEoACircuit, backend);
 
 		const ownerHash = await getPrivateOwnerHash(await signer.getAddress());
 		console.log("ownerHash: ", ownerHash);
@@ -166,9 +163,10 @@ export const getPrivateEOASignature = async (
 
 		console.log("input: ", input);
 
-		const { witness } = await noir.execute(input);
-		console.log("witness: ", witness);
-		const proof = await noir.generateProof(input);
+		// const { witness } = await privateEoACircuit.execute(input);
+		// console.log("witness: ", witness);
+
+		const proof = await privateEoACircuit.generateProof(input);
 		console.log("proof: ", proof.proof);
 		console.log("public inputs: ", proof.publicInputs);
 

@@ -1,5 +1,5 @@
 import { SigningKey, ethers } from "ethers";
-import { pedersenHashBigInt } from "./pedersen";
+import { pedersenHashBigInt } from "./noir/pedersen";
 
 export const getPrivateOwnerHash = async (
 	privateOwnerAddress: string
