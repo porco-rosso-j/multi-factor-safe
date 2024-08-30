@@ -7,6 +7,7 @@ export * from "./safe";
 export * from "./validator";
 export * from "./relayer";
 
+export * from "./aadhaar/constants";
 export * from "./aadhaar/computeUserDataHash";
 export * from "./aadhaar/qrUpload";
 export * from "./k256";

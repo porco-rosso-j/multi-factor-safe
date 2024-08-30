@@ -182,8 +182,8 @@ export const Approve = (props: ApproveProps) => {
 								<Stack style={{ alignItems: "flex-end" }} gap={3}>
 									<Text style={textTextStyle}>
 										{shortenAddress(
-											// requestContent ? requestContent.message : ""
-											"0x0000000000000000000000000000000000000000000000000000000000000032"
+											requestContent ? requestContent.message : ""
+											// "0x0000000000000000000000000000000000000000000000000000000000000032"
 										)}
 									</Text>
 									<Text style={textTextStyle}>
@@ -199,10 +199,10 @@ export const Approve = (props: ApproveProps) => {
 							<Aadhaar
 								isDarkTheme={props.isDarkTheme}
 								address={props.owner.address}
-								// safeTxHash={requestContent ? requestContent.message : ""}
-								safeTxHash={
-									"0x0000000000000000000000000000000000000000000000000000000000000032"
-								}
+								safeTxHash={requestContent ? requestContent.message : ""}
+								// safeTxHash={
+								// 	"0x0000000000000000000000000000000000000000000000000000000000000032"
+								// }
 								handleSetProof={handleSetProof}
 							/>
 						) : props.owner?.type === 3 ? (

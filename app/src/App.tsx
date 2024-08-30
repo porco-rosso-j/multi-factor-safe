@@ -7,6 +7,9 @@ import { Recovery, SafeSigner } from "./pages/index";
 import { useTheme, UserContextProviderComponent } from "./contexts";
 import { Account, Footer, Header } from "./components";
 import { AnonAadhaarProvider } from "@anon-aadhaar/react";
+import { initArgsLocal } from "./utils/aadhaar/constants";
+
+const isLocal = import.meta.env.VITE_LOCAL === "true";
 
 export default function App() {
 	const { isDarkTheme, toggleTheme } = useTheme();
@@ -26,11 +29,7 @@ export default function App() {
 					<Notifications />
 					<UserContextProviderComponent>
 						<AnonAadhaarProvider
-							_artifactslinks={{
-								zkey_url: "/public/circuit_final.zkey",
-								vkey_url: "/public/vkey.json",
-								wasm_url: "/public/aadhaar-verifier.wasm",
-							}}
+							_artifactslinks={isLocal ? initArgsLocal : undefined}
 							_useTestAadhaar={true}
 						>
 							<HashRouter>

@@ -39,16 +39,6 @@ export function Header(props: HeaderProps) {
 		navigate(menu_id == 0 ? "/" : menu_id == 1 ? "/recovery" : "/");
 	};
 
-	const handleRequest = async () => {
-		console.log("todo");
-	};
-
-	const BottunStyle = {
-		marginRight: "35px",
-		color: props.isDarkTheme ? "black" : "white",
-		backgroundColor: props.isDarkTheme ? "white" : "black",
-	};
-
 	return (
 		<Group py={20} justify="space-between">
 			<Text
@@ -57,7 +47,7 @@ export function Header(props: HeaderProps) {
 				c={props.isDarkTheme ? "white" : "black"}
 				style={{ fontFamily: "Verdana, sans-serif" }}
 			>
-				Safe MFA
+				SafeMFA β
 			</Text>
 			<Group gap={30} mt={5}>
 				<Text style={menuTextStyle(0)} onClick={() => handleNavigate(0)}>
@@ -66,6 +56,12 @@ export function Header(props: HeaderProps) {
 				<Text style={menuTextStyle(1)} onClick={() => handleNavigate(1)}>
 					Recovery
 				</Text>
+				<Anchor
+					href="https://safe-mfa.gitbook.io/docs/safe-mfa-app"
+					target="_blank"
+				>
+					<Text style={menuTextStyle(2)}>Documentation</Text>
+				</Anchor>
 			</Group>
 
 			<Group gap={30}>

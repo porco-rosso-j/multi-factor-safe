@@ -1,6 +1,6 @@
 /* eslint-disable react-hooks/exhaustive-deps */
-import { useEffect } from "react";
-import { Box, Text, Group, Stack } from "@mantine/core";
+import { useEffect, useState } from "react";
+import { Box, Text, Group, Stack, TextInput } from "@mantine/core";
 import { IconReload } from "@tabler/icons-react";
 import { CopyButtonIcon } from "../components";
 import { shortenAddress, getSafe } from "../utils";
@@ -13,8 +13,19 @@ type AccountPageProps = {
 
 export function Account(props: AccountPageProps) {
 	const { safe, signer, saveSafe } = useUserContext();
+	const [notSafeAccount, setNotSafeAccount] = useState<boolean>(false);
 	console.log("signer in Account: ", signer);
 	console.log("safe in Account: ", safe);
+
+	const registerSafe = async (safeAddress: string) => {
+		console.log("regsiterSafe...");
+		if (!safe && safeAddress) {
+			const _safe = await getSafe(safeAddress);
+			if (_safe) {
+				saveSafe(_safe);
+			}
+		}
+	};
 
 	const reloadSafe = async () => {
 		console.log("reloadSafe...");
@@ -47,6 +58,14 @@ export function Account(props: AccountPageProps) {
 		}
 	}, [signer, safe, saveSafe]);
 
+	useEffect(() => {
+		if (signer && !safe) {
+			setNotSafeAccount(true);
+		} else if (safe) {
+			setNotSafeAccount(false);
+		}
+	}, [signer, safe]);
+
 	const textTextStyle = {
 		color: props.isDarkTheme ? "white" : "black",
 		TextAlign: "center",
@@ -54,46 +73,64 @@ export function Account(props: AccountPageProps) {
 	return (
 		<>
 			<Box style={AccountBoxStyle(props.isDarkTheme)}>
-				<Stack gap={2} align="left" ml={5}>
-					<Group mb={10}>
-						<Text style={textTextStyle} size="25px">
-							Safe Address:{" "}
+				{notSafeAccount ? (
+					<Stack align="center">
+						<Text style={textTextStyle} size="16px" my={5}>
+							Connect Safe via Wallet Connect or enter your Safe address below
 						</Text>
-						<Text mr={-5} style={textTextStyle} size="25px">
-							{safe ? shortenAddress(safe.address) : ""}
-						</Text>
-						<CopyButtonIcon address={safe ? safe.address : ""} />
-						<div style={{ flex: 1 }} />
-						<IconReload
-							size={20}
+						<TextInput
+							variant="filled"
+							radius="sm"
 							style={{
-								color: props.isDarkTheme ? "white" : "black",
-								marginRight: "5px",
-								cursor: "pointer",
-								transition: "transform 0.2s, color 0.2s", // Smooth transition for transform and color changes
+								width: "60%",
 							}}
-							onClick={() => {
-								reloadSafe();
-							}}
+							size="sm"
+							placeholder="0x123..."
+							onChange={(e) => registerSafe(e.target.value)}
 						/>
-					</Group>
-					<Group>
-						<Text mr={-5} style={textTextStyle} size="md">
-							Threshold:{" "}
-						</Text>
-						<Text style={textTextStyle} size="md">
-							{safe ? safe.threshold : 0}
-						</Text>
-					</Group>
-					<Group>
-						<Text mr={-5} style={textTextStyle} size="md">
-							Owner Count:{" "}
-						</Text>
-						<Text style={textTextStyle} size="md">
-							{safe ? safe.owners.length : 0}
-						</Text>
-					</Group>
-				</Stack>
+					</Stack>
+				) : (
+					<Stack gap={2} align="left" ml={5}>
+						<Group mb={10}>
+							<Text style={textTextStyle} size="25px">
+								Safe Address:{" "}
+							</Text>
+							<Text mr={-5} style={textTextStyle} size="25px">
+								{safe ? shortenAddress(safe.address) : ""}
+							</Text>
+							<CopyButtonIcon address={safe ? safe.address : ""} />
+							<div style={{ flex: 1 }} />
+							<IconReload
+								size={20}
+								style={{
+									color: props.isDarkTheme ? "white" : "black",
+									marginRight: "5px",
+									cursor: "pointer",
+									transition: "transform 0.2s, color 0.2s", // Smooth transition for transform and color changes
+								}}
+								onClick={() => {
+									reloadSafe();
+								}}
+							/>
+						</Group>
+						<Group>
+							<Text mr={-5} style={textTextStyle} size="md">
+								Threshold:{" "}
+							</Text>
+							<Text style={textTextStyle} size="md">
+								{safe ? safe.threshold : 0}
+							</Text>
+						</Group>
+						<Group>
+							<Text mr={-5} style={textTextStyle} size="md">
+								Owner Count:{" "}
+							</Text>
+							<Text style={textTextStyle} size="md">
+								{safe ? safe.owners.length : 0}
+							</Text>
+						</Group>
+					</Stack>
+				)}
 			</Box>
 		</>
 	);

@@ -12,7 +12,7 @@ import { useEffect } from "react";
 import { ethers } from "ethers";
 import { Text, Stack } from "@mantine/core";
 import { TextStyle } from "../styles/styles";
-import { getMFAOpHash } from "../utils";
+import { getMFAOpHash, nullifierSeed } from "../utils";
 
 type AadhaarProps = {
 	isDarkTheme: boolean;
@@ -22,18 +22,10 @@ type AadhaarProps = {
 };
 
 export const Aadhaar = (props: AadhaarProps) => {
-	const nullifierSeed = 1234;
 	const [anonAadhaar] = useAnonAadhaar();
 	const [, latestProof] = useProver();
 
-	console.log("safeTxHash: ", props.safeTxHash);
-	console.log(
-		"getMFAOpHash(props.address, props.safeTxHash): ",
-		getMFAOpHash(props.address, props.safeTxHash)
-	);
-
 	useEffect(() => {
-		// To do: fix the hook in the react lib
 		const aaObj = localStorage.getItem("anonAadhaar");
 		console.log("aaObj: ", aaObj);
 		if (!aaObj) return;

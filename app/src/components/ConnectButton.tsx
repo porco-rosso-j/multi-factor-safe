@@ -1,4 +1,4 @@
-import { Button } from "@mantine/core";
+import { Button, Text } from "@mantine/core";
 import {
 	useWeb3ModalProvider,
 	useWeb3ModalState,
@@ -9,7 +9,7 @@ import {
 import { useEffect } from "react";
 import { EthereumProvider } from "@walletconnect/ethereum-provider";
 import { BottunStyle } from "../styles/styles";
-import { getSigner } from "../utils";
+import { getSigner, shortenAddress } from "../utils";
 import { useUserContext } from "../contexts";
 
 type ConnectButtonProps = {
@@ -62,7 +62,13 @@ export function ConnectButton(props: ConnectButtonProps) {
 					modal.open();
 				}}
 			>
-				{isConnected ? "Connected" : "Connect"}
+				{isConnected ? (
+					<Text size="14px">
+						{address.slice(0, 5) + "..." + address.slice(-4)}
+					</Text>
+				) : (
+					"Connect"
+				)}
 			</Button>
 		</>
 	);

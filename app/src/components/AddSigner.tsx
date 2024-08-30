@@ -258,7 +258,13 @@ export function AddSigner(props: AddSignerPageProps) {
 						{value === "Aadhaar" ? (
 							<Stack align="center">
 								<Text style={TextStyle(props.isDarkTheme)}>
-									Upload your Aadhaar secure QR Code
+									Upload your Aadhaar secure QR Code {""}
+									<Anchor
+										href="https://documentation.anon-aadhaar.pse.dev/docs/generate-qr"
+										target="_blank"
+									>
+										(Get Test QR)
+									</Anchor>
 								</Text>
 								<FileInput
 									isDarkTheme={props.isDarkTheme}
@@ -377,7 +383,7 @@ export function AddSigner(props: AddSignerPageProps) {
 						loading={loading}
 						onClick={() => handleAddSigner()}
 					>
-						Confirm
+						Create
 					</Button>
 				</Group>
 
