@@ -4,6 +4,7 @@ import copy from "rollup-plugin-copy";
 import fs from "fs";
 import path from "path";
 import svgr from "vite-plugin-svgr";
+import topLevelAwait from "vite-plugin-top-level-await";
 
 const wasmContentTypePlugin = {
 	name: "wasm-content-type-plugin",
@@ -29,6 +30,7 @@ export default defineConfig(({ command }) => {
 			svgr({
 				include: "**/*.svg?react",
 			}),
+			topLevelAwait({}),
 		],
 	};
 
@@ -56,10 +58,18 @@ export default defineConfig(({ command }) => {
 		],
 	};
 
+	// const buildConfig = {
+	// 	build: {
+	// 		minify: "esbuild",
+	// 		target: "esnext",
+	// 	},
+	// };
+
 	if (command === "serve") {
 		return {
 			...baseConfig,
 			...serveConfig,
+			// ...buildConfig,
 		};
 	}
 
