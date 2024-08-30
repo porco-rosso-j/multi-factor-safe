@@ -1,4 +1,4 @@
-import { Text, Box, Stack } from "@mantine/core";
+import { Text, Stack } from "@mantine/core";
 import { TextStyle } from "../styles/styles";
 
 type RecoveryPageProps = {

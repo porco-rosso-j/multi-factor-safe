@@ -9,7 +9,7 @@ import {
 import { useEffect } from "react";
 import { EthereumProvider } from "@walletconnect/ethereum-provider";
 import { BottunStyle } from "../styles/styles";
-import { getSigner, shortenAddress } from "../utils";
+import { getSigner } from "../utils";
 import { useUserContext } from "../contexts";
 
 type ConnectButtonProps = {
