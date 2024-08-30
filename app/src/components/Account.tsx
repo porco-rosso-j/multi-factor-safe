@@ -14,6 +14,8 @@ type AccountPageProps = {
 export function Account(props: AccountPageProps) {
 	const { safe, signer, saveSafe } = useUserContext();
 	const [notSafeAccount, setNotSafeAccount] = useState<boolean>(false);
+	const [errorMessage, setErrorMessage] = useState<string>("");
+	console.log("errorMessage: ", errorMessage);
 	console.log("signer in Account: ", signer);
 	console.log("safe in Account: ", safe);
 
@@ -23,6 +25,8 @@ export function Account(props: AccountPageProps) {
 			const _safe = await getSafe(safeAddress);
 			if (_safe) {
 				saveSafe(_safe);
+			} else {
+				setErrorMessage("Error getting Safe");
 			}
 		}
 	};
@@ -79,6 +83,7 @@ export function Account(props: AccountPageProps) {
 							Connect Safe via Wallet Connect or enter your Safe address below
 						</Text>
 						<TextInput
+							error={notSafeAccount && errorMessage ? errorMessage : ""}
 							variant="filled"
 							radius="sm"
 							style={{
